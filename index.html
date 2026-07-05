@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aplikasi Pembuat Soal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #4a6cf7, #6a3ef7);
+    color: white;
+    padding: 20px 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  header h1 { font-size: 24px; }
+  header p { opacity: 0.9; font-size: 14px; margin-top: 4px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  .toolbar {
+    margin-bottom: 20px;
+    background: white; padding: 15px; border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .toolbar-row {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .toolbar-row + .toolbar-row {
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;
+  }
+  .toolbar-font { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+  .toolbar-font input { width: 56px; padding: 6px 8px; text-align: center; }
+  .print-settings-row { gap: 8px 14px; font-size: 13px; }
+  .print-settings-row label { font-weight: 600; white-space: nowrap; }
+  .print-settings-row select,
+  .print-settings-row input[type=number] {
+    width: auto; min-width: 0; padding: 6px 8px; font-size: 13px;
+  }
+  .print-settings-row input[type=number] { width: 52px; text-align: center; }
+  .btn-help {
+    width: 28px; height: 28px; padding: 0; border-radius: 50%;
+    background: #dbeafe; color: #1d4ed8; font-size: 14px; font-weight: 700;
+    border: 1px solid #93c5fd; cursor: pointer; flex-shrink: 0;
+  }
+  .btn-help:hover { background: #bfdbfe; }
+  .margin-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+  .margin-group span { font-size: 12px; color: #4b5563; }
+  .btn {
+    border: none; padding: 10px 16px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; font-weight: 600;
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: #4a6cf7; color: white; }
+  .btn-primary:hover { background: #3a5ce5; }
+  .btn-green { background: #22c55e; color: white; }
+  .btn-green:hover { background: #16a34a; }
+  .btn-gray { background: #e5e7eb; color: #374151; }
+  .btn-gray:hover { background: #d1d5db; }
+  .btn-red { background: #ef4444; color: white; }
+  .btn-red:hover { background: #dc2626; }
+  .btn-orange { background: #f59e0b; color: white; }
+  .btn-orange:hover { background: #d97706; }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+  select, input[type=text], textarea {
+    width: 100%; padding: 10px; border: 1px solid #d1d5db;
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  .card {
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; color: white;
+  }
+  .badge-pg { background: #4a6cf7; }
+  .badge-isian { background: #22c55e; }
+  .badge-esai { background: #f59e0b; }
+  .question-item { border-left: 4px solid #4a6cf7; }
+  .question-item.isian { border-left-color: #22c55e; }
+  .question-item.esai { border-left-color: #f59e0b; }
+  .q-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .q-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .img-preview { max-width: 250px; max-height: 200px; border-radius: 8px; margin-top: 8px; display: block; border: 1px solid #e5e7eb; }
+  .img-preview-sm { max-width: 120px; max-height: 100px; border-radius: 6px; margin-left: 8px; vertical-align: middle; border: 1px solid #e5e7eb; }
+  .option-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 8px;
+    padding: 8px; background: #f9fafb; border-radius: 8px;
+  }
+  .option-row input[type=text] { flex: 1; min-width: 120px; }
+  .opt-img-settings { flex: 1 1 100%; margin-top: 4px; }
+  .option-letter { font-weight: 700; width: 24px; }
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 100; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 30px 15px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white; border-radius: 14px; padding: 25px;
+    width: 100%; max-width: 650px;
+  }
+  .modal h2 { margin-bottom: 18px; }
+  .img-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .empty-state { text-align: center; padding: 50px; color: #9ca3af; }
+  .correct-tag { color: #22c55e; font-weight: 600; font-size: 13px; }
+  .stats { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat-box { background: white; padding: 15px 20px; border-radius: 12px; flex: 1; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .stat-box .num { font-size: 28px; font-weight: 700; color: #4a6cf7; }
+  .stat-box .lbl { font-size: 13px; color: #6b7280; }
+  .answer-box { background: #f0fdf4; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 14px; }
+  input[type=radio] { transform: scale(1.3); cursor: pointer; }
+  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .opt-grid { width: 100%; max-width: 100%; margin-top: 6px; border-collapse: collapse; table-layout: fixed; }
+  .opt-grid td { width: 50%; vertical-align: top; padding: 0 1em 0 0; overflow: hidden; word-wrap: break-word; }
+  .opt-grid td + td { padding: 0 0 0 1em; }
+  .opt-stack { margin-top: 6px; padding-left: 4px; max-width: 100%; overflow: hidden; }
+  .opt-entry { margin: 0.2em 0; min-width: 0; max-width: 100%; overflow: hidden; }
+  .opt-entry.is-correct { background: #f0fdf4; border-radius: 6px; padding: 2px 6px; }
+  .opt-row {
+    display: grid; grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: 0.25em; line-height: 1.45; max-width: 100%;
+  }
+  .opt-lbl { font-weight: 700; }
+  .opt-body {
+    min-width: 0; max-width: 100%;
+    overflow-wrap: break-word; word-wrap: break-word; word-break: normal;
+    white-space: normal; text-align: left;
+  }
+  .opt-long { margin-bottom: 0.45em; }
+  .opt-letter-only .opt-lbl { width: auto; }
+  .opt-img { max-width: 120px; border: 1px solid #e5e7eb; border-radius: 4px; }
+  .opt-row img, .opt-row .opt-img { display: inline-block !important; vertical-align: middle; margin: 0; }
+  .q-inline-run { margin: 0 0 0.35em 0; text-align: left; line-height: 1.45; }
+  .q-head-run {
+    display: inline-flex; align-items: center; gap: 0.4em;
+    max-width: 100%; flex-wrap: wrap; vertical-align: middle;
+  }
+  .q-head-run img, .q-head-run .q-head-img {
+    display: block; flex-shrink: 0; margin: 0; height: auto; max-height: 2.5em;
+  }
+  .q-head-txt { flex: 0 1 auto; min-width: 0; }
+  .q-inline-run img, .q-inline-run .q-img, .q-inline-run .q-inline-img {
+    display: inline-block !important; vertical-align: middle; margin: 0;
+  }
+  .q-options-wrap { max-width: 100%; overflow: hidden; padding-left: 1.15em; box-sizing: border-box; }
+  .q-head-block { margin: 0 0 0.35em 0; max-width: 100%; }
+  .q-head-row { margin: 0.1em 0; }
+  .q-hang-line {
+    margin: 0.1em 0; max-width: 100%; box-sizing: border-box;
+    text-align: justify; line-height: 1.45;
+    word-wrap: break-word; overflow-wrap: break-word; word-break: normal;
+  }
+  .q-text-row { margin: 0 0 0.2em 0; }
+  .q-head-img-wrap img { display: block !important; margin: 0; height: auto; }
+  .question-item { overflow: hidden; max-width: 100%; }
+  .section-title-ui { font-weight: 700; font-size: 16px; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; color: #374151; }
+  .kop-preview-main { background: white; border-radius: 12px; padding: 15px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .kop-preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; font-weight: 600; color: #374151; }
+  .kop-preview-main iframe { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; background: #f3f4f6; display: block; }
+  .pg-format-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .pg-format-opts label { font-weight: normal; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .img-settings {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+    margin-top: 10px; padding: 10px 12px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;
+  }
+  .img-settings label { font-size: 13px; font-weight: 600; margin: 0; }
+  .img-settings input[type=text], .img-settings select { width: auto; min-width: 90px; padding: 6px 10px; font-size: 13px; }
+  .q-img-wrap { margin: 8px 0; }
+  .q-layout-below, .q-layout-above { display: flex; flex-direction: column; gap: 8px; }
+  .q-image-preview-wrap {
+    margin-top: 8px; font-size: 14px; color: #374151; font-weight: 600;
+    line-height: 1.45; text-align: left;
+  }
+  .q-image-preview-wrap .q-head-run { display: inline-flex; align-items: center; gap: 0.4em; }
+  .q-image-preview-wrap img { display: block !important; flex-shrink: 0; max-height: 2.5em; }
+  .q-image-preview-wrap .q-preview-txt { font-weight: 600; }
+  .opt-list-vertical { margin-top: 6px; padding-left: 0; max-width: 100%; }
+  .opt-vertical-item { margin: 0.2em 0; }
+  .modal.modal-kop { max-width: 720px; max-height: 92vh; overflow: hidden; display: flex; flex-direction: column; }
+  .kop-modal-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .kop-modal-top label { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .kop-modal-stack { display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; overflow: hidden; }
+  .kop-form-panel { overflow-y: auto; max-height: 52vh; padding-right: 4px; }
+  .kop-form-panel h3 { font-size: 14px; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; color: #374151; }
+  .kop-form-panel .field { margin-bottom: 10px; }
+  .kop-form-panel .field label { font-size: 13px; margin-bottom: 4px; }
+  .kop-form-panel input, .kop-form-panel select { padding: 8px; font-size: 13px; }
+  .kop-font-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  .kop-font-grid .field label { font-size: 12px; }
+  .kop-font-grid input { width: 100%; }
+  .kop-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kop-dim-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .kop-preview-panel { display: flex; flex-direction: column; gap: 8px; width: 100%; flex-shrink: 0; }
+  .kop-preview-panel iframe { width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; background: #f3f4f6; display: block; height: auto; }
+  .kop-logo-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .kop-logo-preview { width: 36px; height: 36px; border: 1px solid #d1d5db; border-radius: 50%; object-fit: contain; display: none; }
+  @media(max-width:600px){
+    .q-header{flex-direction:column;}
+    .opt-grid, .opt-grid tbody, .opt-grid tr { display: block; width: 100%; }
+    .opt-grid td { display: block; width: 100% !important; padding: 0 0 0.5em 0; border-left: none !important; }
+    .modal.modal-kop{max-width:96vw;margin:0 auto;}
+    .kop-font-grid,.kop-info-grid{grid-template-columns:1fr;}
+    .kop-dim-row{grid-template-columns:1fr;}
+    .kop-form-panel{max-height:70vh;}
+    .kop-preview-panel iframe{min-height:60px;max-height:180px;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>📝 Aplikasi Pembuat Soal</h1>
+  <p>Buat soal Pilihan Ganda, Isian, dan Esai • Kop soal custom • Cetak langsung</p>
+</header>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat-box"><div class="num" id="statTotal">0</div><div class="lbl">Total Soal</div></div>
+    <div class="stat-box"><div class="num" id="statPG">0</div><div class="lbl">Pilihan Ganda</div></div>
+    <div class="stat-box"><div class="num" id="statIsian">0</div><div class="lbl">Isian</div></div>
+    <div class="stat-box"><div class="num" id="statEsai">0</div><div class="lbl">Esai</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <button class="btn btn-primary" onclick="openModal('pg')">➕ Pilihan Ganda</button>
+      <button class="btn btn-green" onclick="openModal('isian')">➕ Isian</button>
+      <button class="btn btn-orange" onclick="openModal('esai')">➕ Esai</button>
+      <button class="btn btn-gray" onclick="exportData()">💾 Export JSON</button>
+      <button class="btn btn-gray" onclick="document.getElementById('importFile').click()">📂 Import JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-gray" onclick="openKopModal()">📋 Kop Soal</button>
+      <button class="btn btn-gray" onclick="printQuestions()">🖨️ Cetak / Preview</button>
+      <button class="btn btn-gray" onclick="printAnswerSheet()">📋 Lembar Jawaban</button>
+      <button class="btn btn-gray" onclick="printAnswerKey()">🔑 Kunci Jawaban</button>
+      <button class="btn btn-gray" id="btnExportPdf" onclick="exportPdf()">📄 Export PDF</button>
+      <button class="btn btn-gray" id="btnExportWord" onclick="exportWord()">📝 Export Word</button>
+      <button class="btn btn-red" onclick="resetApp()">♻️ Reset Aplikasi</button>
+    </div>
+    <div class="toolbar-row print-settings-row">
+      <label for="printPaper">Kertas:</label>
+      <select id="printPaper">
+        <option value="A4">A4</option>
+        <option value="A5">A5</option>
+        <option value="Letter">Letter</option>
+        <option value="Legal">Legal</option>
+        <option value="F4">F4</option>
+      </select>
+      <button type="button" class="btn-help" onclick="showPrintPaperHint()" title="Petunjuk ukuran kertas saat cetak">?</button>
+      <label>Margin (mm):</label>
+      <div class="margin-group">
+        <span>Atas</span><input type="number" id="printMarginTop" min="0" max="50" value="6">
+        <span>Bawah</span><input type="number" id="printMarginBottom" min="0" max="50" value="6">
+        <span>Kiri</span><input type="number" id="printMarginLeft" min="0" max="50" value="6">
+        <span>Kanan</span><input type="number" id="printMarginRight" min="0" max="50" value="6">
+      </div>
+      <label for="printQuestionGap">Jarak Soal (px):</label>
+      <input type="number" id="printQuestionGap" min="0" max="80" value="1">
+      <div class="toolbar-font">
+        <label for="printFontSize">Font:</label>
+        <input type="number" id="printFontSize" min="8" max="28" value="16">
+        <span style="font-weight:normal;color:#6b7280;">px</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-bar card" style="padding:12px 15px;">
+    <strong style="font-size:14px;">Filter:</strong>
+    <select id="filterType" style="width:auto;" onchange="render()">
+      <option value="all">Semua Tipe</option>
+      <option value="pg">Pilihan Ganda</option>
+      <option value="isian">Isian</option>
+      <option value="esai">Esai</option>
+    </select>
+    <input type="text" id="searchBox" placeholder="🔍 Cari soal..." style="width:auto; flex:1; min-width:200px;" oninput="render()">
+  </div>
+
+  <div id="kopPreviewMain" class="kop-preview-main" style="display:none;">
+    <div class="kop-preview-header">
+      <span>📋 Pratinjau Kop Soal</span>
+      <button class="btn btn-gray btn-sm" onclick="openKopModal()">✏️ Edit Kop</button>
+    </div>
+    <iframe id="kopPreviewMainFrame" title="Pratinjau Kop"></iframe>
+  </div>
+
+  <div id="questionList"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Tambah Soal</h2>
+    <input type="hidden" id="editId">
+    <input type="hidden" id="questionType">
+
+    <div class="field">
+      <label>Pertanyaan</label>
+      <textarea id="questionText" placeholder="Teks pertanyaan (opsional jika hanya gambar)..."></textarea>
+      <div class="img-controls" style="margin-top:8px;">
+        <button type="button" class="btn btn-gray btn-sm" onclick="document.getElementById('qImageFile').click()">🖼️ Tambah Gambar</button>
+        <button type="button" class="btn btn-red btn-sm" id="qImageRemove" style="display:none;" onclick="removeQImage()">Hapus Gambar</button>
+        <input type="file" id="qImageFile" accept="image/*" style="display:none" onchange="handleQImage(event)">
+      </div>
+      <div id="qImageSettings" class="img-settings" style="display:none;">
+        <label for="qImageWidth">Lebar (px):</label>
+        <input type="text" id="qImageWidth" value="auto" placeholder="auto" title="Isi angka (mis. 200) atau auto">
+        <label for="qImagePosition">Posisi:</label>
+        <select id="qImagePosition" onchange="updateQImagePreviewLayout()">
+          <option value="below">Bawah pertanyaan</option>
+          <option value="above">Atas pertanyaan</option>
+          <option value="left">Kiri pertanyaan</option>
+          <option value="right">Kanan pertanyaan</option>
+        </select>
+      </div>
+      <p id="qImagePreviewWrap" class="q-image-preview-wrap q-inline-run" style="display:none;">
+        <img id="qImagePreview" class="img-preview q-inline-img" alt="">
+        <span id="qImagePreviewText" class="q-preview-txt"></span>
+      </p>
+    </div>
+
+    <!-- Pilihan Ganda options -->
+    <div class="field" id="pgSection">
+      <label>Format Pilihan</label>
+      <div class="pg-format-opts">
+        <label><input type="radio" name="pgFormat" value="grid-acbd" checked> A|C / B|D &nbsp;(2 kolom)</label>
+        <label><input type="radio" name="pgFormat" value="vertical"> A / B / C / D &nbsp;(vertikal)</label>
+      </div>
+      <label style="margin-top:12px;">Pilihan Jawaban (teks atau gambar — klik radio untuk jawaban benar)</label>
+      <div id="optionsContainer"></div>
+      <button class="btn btn-gray btn-sm" onclick="addOption()" style="margin-top:6px;">➕ Tambah Pilihan</button>
+    </div>
+
+    <!-- Isian answer -->
+    <div class="field" id="isianSection" style="display:none;">
+      <label>Kunci Jawaban (Isian)</label>
+      <input type="text" id="isianAnswer" placeholder="Jawaban yang benar...">
+    </div>
+
+    <!-- Esai answer -->
+    <div class="field" id="esaiSection" style="display:none;">
+      <label>Pedoman / Kunci Jawaban Esai (opsional)</label>
+      <textarea id="esaiAnswer" placeholder="Pedoman jawaban / poin penilaian..."></textarea>
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
+      <button class="btn btn-gray" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveQuestion()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KOP SOAL -->
+<div class="modal-overlay" id="kopModalOverlay">
+  <div class="modal modal-kop">
+    <h2>📋 Pengaturan Kop Soal</h2>
+    <div class="kop-modal-top">
+      <label><input type="checkbox" id="kopEnabled" checked> Tampilkan kop saat cetak</label>
+    </div>
+    <div class="kop-modal-stack">
+      <div class="kop-preview-panel">
+        <strong style="font-size:14px;">Pratinjau</strong>
+        <iframe id="kopPreviewFrame" title="Pratinjau Kop"></iframe>
+      </div>
+      <div class="kop-form-panel" id="kopFormPanel">
+        <div class="field"><label>Judul Atas</label><input type="text" id="kopTopTitle" value="PENILAIAN SUMATIF AKHIR"></div>
+        <div class="field"><label>Nama Sekolah</label><input type="text" id="kopSchoolName" value="UPT SD NEGERI 067953"></div>
+        <div class="field"><label>Semester</label>
+          <select id="kopSemester"><option value="GANJIL">GANJIL</option><option value="GENAP">GENAP</option></select>
+        </div>
+        <div class="field"><label>Tahun Pelajaran</label><input type="text" id="kopSchoolYear" value="2026/2027"></div>
+        <div class="field"><label>Kurikulum</label><input type="text" id="kopCurriculum" value="KURIKULUM MERDEKA"></div>
+        <div class="field"><label>Kota</label><input type="text" id="kopCity" value="KOTA MEDAN"></div>
+        <div class="field"><label>Mata Pelajaran</label><input type="text" id="kopSubject" value="ILMU PENGETAHUAN ALAM DAN SOSIAL (IPAS)"></div>
+        <div class="field"><label>Kelas</label><input type="text" id="kopClassNumber" value="4"></div>
+        <div class="field">
+          <label>Logo Sekolah</label>
+          <div class="kop-logo-row">
+            <button type="button" class="btn btn-gray btn-sm" onclick="document.getElementById('kopLogoFile').click()">🖼️ Pilih Logo</button>
+            <button type="button" class="btn btn-red btn-sm" id="kopLogoRemove" style="display:none;" onclick="removeKopLogo()">Hapus</button>
+            <input type="file" id="kopLogoFile" accept="image/*" style="display:none">
+            <img id="kopLogoPreview" class="kop-logo-preview" alt="">
+          </div>
+          <small style="color:#6b7280;font-size:12px;">Kosongkan jika tidak ingin logo dicetak</small>
+        </div>
+        <div id="kopLogoSettings" class="img-settings" style="display:none;">
+          <label for="kopLogoWidth">Lebar (px):</label>
+          <input type="number" id="kopLogoWidth" value="30" min="10" max="200" step="1">
+          <label for="kopLogoHeight">Tinggi (px):</label>
+          <input type="text" id="kopLogoHeight" value="auto" placeholder="auto" title="Angka (px) atau auto">
+          <label for="kopLogoPosition">Posisi:</label>
+          <select id="kopLogoPosition">
+            <option value="top">Atas teks</option>
+            <option value="left">Kiri teks</option>
+            <option value="right">Kanan teks</option>
+            <option value="bottom">Bawah teks</option>
+          </select>
+          <label for="kopLogoAlign">Rata logo:</label>
+          <select id="kopLogoAlign">
+            <option value="left">Kiri</option>
+            <option value="center">Tengah</option>
+            <option value="right">Kanan</option>
+          </select>
+          <label for="kopLogoOffsetX">Geser ↔ (px):</label>
+          <input type="number" id="kopLogoOffsetX" value="0" min="-150" max="150" step="1" title="Minus = kiri, plus = kanan">
+          <label for="kopLogoOffsetY">Geser ↕ (px):</label>
+          <input type="number" id="kopLogoOffsetY" value="0" min="-40" max="40" step="1" title="Minus = atas, plus = bawah">
+        </div>
+        <h3>Isian Kanan (Nama, Hari, …)</h3>
+        <div class="kop-info-grid">
+          <div class="field"><label>Label 1</label><input type="text" id="kopLabel1" value="Nama"></div>
+          <div class="field"><label>Nilai 1</label><input type="text" id="kopValue1" placeholder="Opsional"></div>
+          <div class="field"><label>Label 2</label><input type="text" id="kopLabel2" value="Hari"></div>
+          <div class="field"><label>Nilai 2</label><input type="text" id="kopValue2" placeholder="Opsional"></div>
+          <div class="field"><label>Label 3</label><input type="text" id="kopLabel3" value="Tanggal"></div>
+          <div class="field"><label>Nilai 3</label><input type="text" id="kopValue3" placeholder="Opsional"></div>
+          <div class="field"><label>Label 4</label><input type="text" id="kopLabel4" value="Waktu"></div>
+          <div class="field"><label>Nilai 4</label><input type="text" id="kopValue4" placeholder="Opsional"></div>
+        </div>
+        <div class="field"><label>Teks Bawah</label><input type="text" id="kopBottomText" value="LEMBAR SOAL"></div>
+        <h3>Dimensi Kop (proporsi pratinjau)</h3>
+        <div class="kop-dim-row">
+          <div class="field"><label>Lebar (px)</label><input type="number" id="kopPageWidth" value="1000" min="200" max="2000" step="10"></div>
+          <div class="field"><label>Tinggi (px)</label><input type="number" id="kopPageHeight" value="150" min="80" max="600" step="10"></div>
+          <div class="field"><label>Border (px)</label><input type="number" id="kopBorderThick" value="2" min="1" max="10" step="0.5"></div>
+        </div>
+        <h3>Ukuran Font Kop (px)</h3>
+        <div class="kop-font-grid">
+          <div class="field"><label>Font Kop</label><input type="number" id="kopFontKop" value="9" min="4" max="40" step="0.5"></div>
+          <div class="field"><label>Font Mapel</label><input type="number" id="kopFontSubject" value="10" min="4" max="40" step="0.5"></div>
+          <div class="field"><label>Label Kelas</label><input type="number" id="kopFontKelasLabel" value="9" min="4" max="40" step="0.5"></div>
+          <div class="field"><label>Angka Kelas</label><input type="number" id="kopFontKelasNumber" value="18" min="6" max="60" step="0.5"></div>
+          <div class="field"><label>Font Info</label><input type="number" id="kopFontInfo" value="9" min="4" max="40" step="0.5"></div>
+          <div class="field"><label>Teks Bawah</label><input type="number" id="kopFontBottom" value="13" min="6" max="40" step="0.5"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px; flex-shrink:0;">
+      <button type="button" class="btn btn-gray" onclick="closeKopModal()">Tutup</button>
+      <button type="button" class="btn btn-primary" onclick="saveKopAndClose()">💾 Simpan Kop</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+let questions = JSON.parse(localStorage.getItem('soal_data') || '[]');
+let currentQImage = null;
+let optionImages = {}; // index -> dataURL
+
+const DEFAULT_PRINT_SETTINGS = {
+  fontSize: 16,
+  paper: 'F4',
+  marginTop: 1,
+  marginBottom: 1,
+  marginLeft: 2,
+  marginRight: 2,
+  questionGap: 1
+};
+let printSettings = { ...DEFAULT_PRINT_SETTINGS };
+
+const DEFAULT_KOP_SETTINGS = {
+  enabled: true,
+  topTitle: 'PENILAIAN SUMATIF AKHIR',
+  schoolName: 'UPT SD NEGERI 067953',
+  semester: 'GANJIL',
+  schoolYear: '2026/2027',
+  curriculum: 'KURIKULUM MERDEKA',
+  city: 'KOTA MEDAN',
+  subject: 'ILMU PENGETAHUAN ALAM DAN SOSIAL (IPAS)',
+  classNumber: '1',
+  logo: '',
+  logoWidth: 108,
+  logoHeight: 'auto',
+  logoPosition: 'left',
+  logoAlign: 'center',
+  logoOffsetX: 0,
+  logoOffsetY: 0,
+  label1: 'Nama', value1: '',
+  label2: 'Hari', value2: '',
+  label3: 'Tanggal', value3: '',
+  label4: 'Waktu', value4: '60 Menit',
+  bottomText: 'LEMBAR SOAL',
+  pageWidth: 1000,
+  pageHeight: 170,
+  borderThick: 1,
+  fontKop: 16,
+  fontSubject: 18,
+  fontKelasLabel: 16,
+  fontKelasNumber: 20,
+  fontInfo: 16,
+  fontBottom: 16
+};
+let kopSettings = { ...DEFAULT_KOP_SETTINGS };
+
+function saveKopSettings() {
+  localStorage.setItem('soal_kop_settings', JSON.stringify(kopSettings));
+}
+
+function loadKopSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('soal_kop_settings') || 'null');
+    if (saved && typeof saved === 'object') kopSettings = { ...DEFAULT_KOP_SETTINGS, ...saved };
+  } catch (e) { kopSettings = { ...DEFAULT_KOP_SETTINGS }; }
+}
+
+function getKopLogoFromUI() {
+  if (kopSettings.logo) return kopSettings.logo;
+  const prev = document.getElementById('kopLogoPreview');
+  if (!prev) return '';
+  const src = prev.getAttribute('src') || '';
+  return (src.startsWith('data:') || src.startsWith('blob:')) ? src : '';
+}
+
+function normalizeKopLogoHeight(val) {
+  if (val === null || val === undefined || val === '') return 'auto';
+  return String(val).trim() || 'auto';
+}
+
+function readKopSettingsFromUI() {
+  const v = id => document.getElementById(id)?.value ?? '';
+  const num = (id, def) => {
+    const n = parseFloat(document.getElementById(id)?.value);
+    return Number.isFinite(n) ? n : def;
+  };
+  return {
+    enabled: document.getElementById('kopEnabled')?.checked !== false,
+    topTitle: v('kopTopTitle'),
+    schoolName: v('kopSchoolName'),
+    semester: v('kopSemester') || 'GANJIL',
+    schoolYear: v('kopSchoolYear'),
+    curriculum: v('kopCurriculum'),
+    city: v('kopCity'),
+    subject: v('kopSubject'),
+    classNumber: v('kopClassNumber'),
+    logo: getKopLogoFromUI(),
+    logoWidth: Math.max(10, num('kopLogoWidth', 30)),
+    logoHeight: normalizeKopLogoHeight(document.getElementById('kopLogoHeight')?.value || 'auto'),
+    logoPosition: v('kopLogoPosition') || 'top',
+    logoAlign: v('kopLogoAlign') || 'left',
+    logoOffsetX: num('kopLogoOffsetX', 0),
+    logoOffsetY: num('kopLogoOffsetY', 0),
+    label1: v('kopLabel1'), value1: v('kopValue1'),
+    label2: v('kopLabel2'), value2: v('kopValue2'),
+    label3: v('kopLabel3'), value3: v('kopValue3'),
+    label4: v('kopLabel4'), value4: v('kopValue4'),
+    bottomText: v('kopBottomText'),
+    pageWidth: Math.max(200, num('kopPageWidth', 1000)),
+    pageHeight: Math.max(80, num('kopPageHeight', 150)),
+    borderThick: Math.max(1, num('kopBorderThick', 2)),
+    fontKop: num('kopFontKop', 9),
+    fontSubject: num('kopFontSubject', 10),
+    fontKelasLabel: num('kopFontKelasLabel', 9),
+    fontKelasNumber: num('kopFontKelasNumber', 18),
+    fontInfo: num('kopFontInfo', 9),
+    fontBottom: num('kopFontBottom', 13)
+  };
+}
+
+function applyKopSettingsToUI() {
+  const k = kopSettings;
+  document.getElementById('kopEnabled').checked = k.enabled !== false;
+  document.getElementById('kopTopTitle').value = k.topTitle;
+  document.getElementById('kopSchoolName').value = k.schoolName;
+  document.getElementById('kopSemester').value = k.semester || 'GANJIL';
+  document.getElementById('kopSchoolYear').value = k.schoolYear;
+  document.getElementById('kopCurriculum').value = k.curriculum;
+  document.getElementById('kopCity').value = k.city;
+  document.getElementById('kopSubject').value = k.subject;
+  document.getElementById('kopClassNumber').value = k.classNumber;
+  document.getElementById('kopLabel1').value = k.label1;
+  document.getElementById('kopValue1').value = k.value1;
+  document.getElementById('kopLabel2').value = k.label2;
+  document.getElementById('kopValue2').value = k.value2;
+  document.getElementById('kopLabel3').value = k.label3;
+  document.getElementById('kopValue3').value = k.value3;
+  document.getElementById('kopLabel4').value = k.label4;
+  document.getElementById('kopValue4').value = k.value4;
+  document.getElementById('kopBottomText').value = k.bottomText;
+  document.getElementById('kopPageWidth').value = k.pageWidth;
+  document.getElementById('kopPageHeight').value = k.pageHeight;
+  document.getElementById('kopBorderThick').value = k.borderThick;
+  document.getElementById('kopFontKop').value = k.fontKop;
+  document.getElementById('kopFontSubject').value = k.fontSubject;
+  document.getElementById('kopFontKelasLabel').value = k.fontKelasLabel;
+  document.getElementById('kopFontKelasNumber').value = k.fontKelasNumber;
+  document.getElementById('kopFontInfo').value = k.fontInfo;
+  document.getElementById('kopFontBottom').value = k.fontBottom;
+  document.getElementById('kopLogoWidth').value = k.logoWidth ?? 30;
+  document.getElementById('kopLogoHeight').value = k.logoHeight ?? 'auto';
+  document.getElementById('kopLogoPosition').value = k.logoPosition || 'top';
+  document.getElementById('kopLogoAlign').value = k.logoAlign || 'left';
+  document.getElementById('kopLogoOffsetX').value = k.logoOffsetX ?? 0;
+  document.getElementById('kopLogoOffsetY').value = k.logoOffsetY ?? 0;
+  const prev = document.getElementById('kopLogoPreview');
+  const rm = document.getElementById('kopLogoRemove');
+  if (k.logo) {
+    prev.src = k.logo;
+    prev.style.display = 'inline-block';
+    if (rm) rm.style.display = 'inline-flex';
+  } else {
+    prev.removeAttribute('src');
+    prev.style.display = 'none';
+    if (rm) rm.style.display = 'none';
+  }
+  toggleKopLogoSettings();
+}
+
+function toggleKopLogoSettings() {
+  const el = document.getElementById('kopLogoSettings');
+  if (!el) return;
+  el.style.display = getKopLogoFromUI() ? 'flex' : 'none';
+}
+
+function getKopSettings() {
+  return { ...kopSettings };
+}
+
+function generateKopInfoRow(label, value) {
+  const l = escapeHtml(label);
+  const val = (value || '').trim();
+  const valCell = val ? escapeHtml(val) : '';
+  return `<tr><td class="kop-info-lbl">${l}</td><td class="kop-info-sep">:</td><td class="kop-info-val">${valCell}</td></tr>`;
+}
+
+function getKopLogoImgStyle(k) {
+  const w = Math.max(10, parseFloat(k.logoWidth) || 30);
+  const hRaw = normalizeKopLogoHeight(k.logoHeight);
+  const base = 'max-width:100%;object-fit:contain;display:block;margin:0;';
+  if (hRaw === 'auto') return `width:${w}px;height:auto;${base}`;
+  const h = Math.max(10, parseFloat(hRaw) || w);
+  return `width:${w}px;height:${h}px;${base}`;
+}
+
+function renderKopLogoHtml(k, forPreview) {
+  if (!k.logo) return '';
+  const style = getKopLogoImgStyle(k);
+  if (forPreview) {
+    return `<img class="kop-logo-img" style="${style}" alt="" data-kop-logo="1">`;
+  }
+  return `<img src="${k.logo}" class="kop-logo-img" style="${style}" alt="">`;
+}
+
+function renderKopLogoBlock(k, forPreview) {
+  const logo = renderKopLogoHtml(k, forPreview);
+  if (!logo) return '';
+  return `<div class="kop-logo-wrap" style="${getKopLogoWrapStyle(k)}">${logo}</div>`;
+}
+
+function renderKopTitleHtml(k) {
+  const topTitle = escapeHtml((k.topTitle || '').trim() || 'PENILAIAN SUMATIF AKHIR');
+  const school = escapeHtml((k.schoolName || '').trim() || 'UPT SD NEGERI 067953');
+  const semester = escapeHtml(k.semester || 'GANJIL');
+  const year = escapeHtml((k.schoolYear || '').trim() || '2026/2027');
+  const curriculum = escapeHtml((k.curriculum || '').trim() || 'KURIKULUM MERDEKA');
+  const city = escapeHtml((k.city || '').trim() || 'KOTA MEDAN');
+  const subject = escapeHtml((k.subject || '').trim() || 'MATA PELAJARAN');
+  return `<div class="kop-text">${topTitle}<br>
+      SEMESTER ${semester} ${school}<br>
+      TAHUN PELAJARAN : ${year}<br>
+      ${curriculum}<br>
+      ${city}
+    </div>
+    <div class="kop-subject">${subject}</div>`;
+}
+
+function getKopLogoWrapStyle(k) {
+  const align = k.logoAlign || 'left';
+  const ox = Number(k.logoOffsetX) || 0;
+  const oy = Number(k.logoOffsetY) || 0;
+  const justify = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
+  return `display:flex;justify-content:${justify};align-items:center;width:100%;`
+    + `padding:0;box-sizing:border-box;transform:translate(${ox}px,${oy}px);`;
+}
+
+function renderKopLeftInner(k, forPreview) {
+  const logoBlock = renderKopLogoBlock(k, forPreview);
+  const title = renderKopTitleHtml(k);
+  const pos = k.logoPosition || 'top';
+  const logoW = Math.max(10, parseFloat(k.logoWidth) || 30);
+
+  if (!logoBlock) {
+    return `<div class="kop-left-stack"><div class="kop-title-cell kop-no-logo">${title}</div></div>`;
+  }
+  if (pos === 'top') {
+    return `<div class="kop-left-stack">
+      ${logoBlock}
+      <div class="kop-title-cell">${title}</div>
+    </div>`;
+  }
+  if (pos === 'bottom') {
+    return `<div class="kop-left-stack">
+      <div class="kop-title-cell">${title}</div>
+      ${logoBlock}
+    </div>`;
+  }
+  if (pos === 'right') {
+    return `<table class="kop-inner-left">
+      <tr><td class="kop-title-cell">${title}</td><td class="kop-logo-cell kop-logo-pos-right" style="width:${logoW + 16}px;">${logoBlock}</td></tr>
+    </table>`;
+  }
+  if (pos === 'left') {
+    return `<table class="kop-inner-left">
+      <tr><td class="kop-logo-cell kop-logo-pos-left" style="width:${logoW + 16}px;">${logoBlock}</td><td class="kop-title-cell">${title}</td></tr>
+    </table>`;
+  }
+  return `<div class="kop-left-stack">${logoBlock}<div class="kop-title-cell">${title}</div></div>`;
+}
+
+function generateKopCss(k, forPrint, contentWidthPx) {
+  const pageW = k.pageWidth || 1000;
+  const pageH = k.pageHeight || 150;
+  const bt = k.borderThick || 2;
+
+  // print mode: render kop at design size then scale proportionally to fit content width
+  let sizeRule, wrapAdjust, wrapOverflow;
+  if (forPrint && contentWidthPx > 0) {
+    const scale = contentWidthPx / pageW;
+    sizeRule = `width:${pageW}px;height:${pageH}px;overflow:hidden;flex-shrink:0;transform:scale(${scale});transform-origin:top left;`;
+    wrapAdjust = `height:${(pageH * scale).toFixed(2)}px;overflow:hidden;`;
+    wrapOverflow = 'overflow:hidden;';
+  } else if (forPrint) {
+    sizeRule = `width:100%;aspect-ratio:${pageW}/${pageH};height:auto;overflow:hidden;`;
+    wrapAdjust = '';
+    wrapOverflow = '';
+  } else {
+    sizeRule = `width:100%;height:100%;overflow:hidden;`;
+    wrapAdjust = '';
+    wrapOverflow = '';
+  }
+
+  const previewShell = forPrint ? '' : `
+html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;box-sizing:border-box;}
+body{background:#e8e8e8;padding:6px;}
+.kop-preview-shell{width:100%;height:100%;box-sizing:border-box;overflow:hidden;display:flex;align-items:stretch;}
+`;
+  return `${previewShell}
+.print-kop-wrap{column-span:all;-webkit-column-span:all;width:100%;margin:0 0 1ch 0;break-after:avoid;page-break-after:avoid;page-break-inside:avoid;${wrapOverflow}}
+${wrapAdjust ? '.print-kop-wrap{'+wrapAdjust+'}' : ''}
+.kop-page{${sizeRule}background:#fff;border:${bt}px solid #000;padding:4px 8px;box-sizing:border-box;display:flex;flex-direction:column;font-family:"Times New Roman",Times,serif;}
+.kop-main-table{width:100%;height:100%;border-collapse:collapse;table-layout:fixed;border:none;flex:1;min-height:0;}
+.kop-main-table td{vertical-align:top;padding:0;}
+.kop-left-col{width:60%;border-right:1px solid #000;padding:2px 6px;vertical-align:top;overflow:hidden;}
+.kop-left-stack{display:flex;flex-direction:column;width:100%;gap:2px;align-items:stretch;min-width:0;}
+.kop-logo-wrap{flex-shrink:0;overflow:visible;}
+.kop-center-col{width:12%;border-right:1px solid #000;text-align:center;padding:2px 4px;}
+.kop-right-col{width:28%;padding:2px 6px 2px 10px;overflow:hidden;}
+.kop-main-row{border-bottom:1px solid #000;height:calc(100% - 1.6em);}
+.kop-inner-left{width:100%;border-collapse:collapse;border:none;table-layout:fixed;}
+.kop-inner-left td{border:none;vertical-align:middle;overflow:hidden;}
+.kop-logo-cell{text-align:center;padding:2px 4px;vertical-align:middle;}
+.kop-logo-pos-left{padding-right:4px;}
+.kop-logo-pos-right{padding-left:4px;}
+.kop-logo-img{display:block;max-width:100%;}
+.kop-title-cell{text-align:center;width:100%;min-width:0;overflow:hidden;}
+.kop-no-logo{width:100%;}
+.kop-text{font-size:${k.fontKop}px;line-height:1.25;margin-bottom:1px;word-wrap:break-word;}
+.kop-subject{font-size:${k.fontSubject}px;font-weight:bold;line-height:1.15;margin-top:1px;word-wrap:break-word;}
+.kop-kelas-table{width:100%;height:100%;border-collapse:collapse;border:none;}
+.kop-kelas-table td{border:none;border-bottom:1px solid #000;padding:2px 1px;font-size:${k.fontKelasLabel}px;vertical-align:middle;}
+.kop-kelas-table tr:last-child td{border-bottom:none;}
+.kop-kelas-number{font-size:${k.fontKelasNumber}px;font-weight:bold;}
+.kop-info-table{width:100%;height:100%;border-collapse:collapse;border:none;font-size:${k.fontInfo}px;table-layout:auto;}
+.kop-info-table tr{height:25%;}
+.kop-info-table td{border:none;border-bottom:1px solid #000;padding:2px 0;vertical-align:middle;}
+.kop-info-table tr:last-child td{border-bottom:none;}
+.kop-info-lbl{white-space:nowrap;width:1%;text-align:left;padding-right:0;padding-left:0;}
+.kop-info-sep{white-space:nowrap;width:1%;padding:2px 2px 2px 1px;}
+.kop-info-val{text-align:left;padding-left:2px;word-wrap:break-word;}
+.kop-bottom-row{text-align:center;vertical-align:middle;height:1.6em;border-top:1px solid #000;border-bottom:none;}
+.kop-bottom-row p{margin:0;font-size:${k.fontBottom}px;font-weight:bold;letter-spacing:1px;line-height:1.6em;}`;
+}
+
+function generateKopHtmlBody(k, forPreview) {
+  const kelas = escapeHtml((k.classNumber || '').trim() || '4');
+  const bottomText = escapeHtml((k.bottomText || '').trim() || 'LEMBAR SOAL');
+  const shellOpen = forPreview ? '<div class="kop-preview-shell">' : '';
+  const shellClose = forPreview ? '</div>' : '';
+
+  return `${shellOpen}<div class="kop-page">
+    <table class="kop-main-table">
+      <tr class="kop-main-row">
+        <td class="kop-left-col">${renderKopLeftInner(k, forPreview)}</td>
+        <td class="kop-center-col">
+          <table class="kop-kelas-table">
+            <tr><td>KELAS</td></tr>
+            <tr><td class="kop-kelas-number">${kelas}</td></tr>
+          </table>
+        </td>
+        <td class="kop-right-col">
+          <table class="kop-info-table">
+            ${generateKopInfoRow(k.label1 || 'Nama', k.value1)}
+            ${generateKopInfoRow(k.label2 || 'Hari', k.value2)}
+            ${generateKopInfoRow(k.label3 || 'Tanggal', k.value3)}
+            ${generateKopInfoRow(k.label4 || 'Waktu', k.value4)}
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" class="kop-bottom-row"><p>${bottomText}</p></td>
+      </tr>
+    </table>
+  </div>${shellClose}`;
+}
+
+function applyKopPreviewLogo(doc, logoData) {
+  if (!doc || !logoData) return;
+  doc.querySelectorAll('img[data-kop-logo]').forEach(img => { img.src = logoData; });
+}
+
+function syncKopPreviewFrameSize(frame, pageW, pageH) {
+  const w = Math.max(200, pageW || 1000);
+  const h = Math.max(80, pageH || 150);
+  frame.style.width = '100%';
+  frame.style.aspectRatio = `${w} / ${h}`;
+  frame.style.height = 'auto';
+  frame.style.maxHeight = '280px';
+  frame.style.minHeight = '90px';
+  frame.style.border = '0';
+}
+
+function updateKopPreview() {
+  const frame = document.getElementById('kopPreviewFrame');
+  if (!frame) return;
+  const k = readKopSettingsFromUI();
+  if (k.logo) kopSettings.logo = k.logo;
+  const pageW = k.pageWidth || 1000;
+  const pageH = k.pageHeight || 150;
+  syncKopPreviewFrameSize(frame, pageW, pageH);
+  const doc = frame.contentDocument || frame.contentWindow?.document;
+  if (!doc) return;
+  const logoData = k.logo || getKopLogoFromUI();
+  if (logoData) k.logo = logoData;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    ${generateKopCss(k, false)}
+  </style></head><body>${generateKopHtmlBody(k, true)}</body></html>`;
+  doc.open();
+  doc.write(html);
+  doc.close();
+  const injectLogo = () => applyKopPreviewLogo(doc, logoData);
+  injectLogo();
+  if (logoData) requestAnimationFrame(injectLogo);
+}
+
+function openKopModal() {
+  applyKopSettingsToUI();
+  document.getElementById('kopModalOverlay').classList.add('active');
+  requestAnimationFrame(() => updateKopPreview());
+}
+
+function closeKopModal() {
+  document.getElementById('kopModalOverlay').classList.remove('active');
+}
+
+function renderMainKopPreview() {
+  const k = getKopSettings();
+  const container = document.getElementById('kopPreviewMain');
+  if (!container) return;
+  if (!k.enabled) { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  const frame = document.getElementById('kopPreviewMainFrame');
+  const pageW = k.pageWidth || 1000;
+  const pageH = k.pageHeight || 150;
+  frame.style.width = '100%';
+  frame.style.aspectRatio = `${pageW} / ${pageH}`;
+  frame.style.height = 'auto';
+  frame.style.maxHeight = '200px';
+  frame.style.minHeight = '60px';
+  const doc = frame.contentDocument || frame.contentWindow?.document;
+  if (!doc) return;
+  const logoData = k.logo || '';
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    ${generateKopCss(k, false)}
+  </style></head><body>${generateKopHtmlBody(k, true)}</body></html>`;
+  doc.open();
+  doc.write(html);
+  doc.close();
+  if (logoData) {
+    const inject = () => doc.querySelectorAll('img[data-kop-logo]').forEach(img => { img.src = logoData; });
+    inject();
+    requestAnimationFrame(inject);
+  }
+}
+
+function saveKopAndClose() {
+  kopSettings = readKopSettingsFromUI();
+  saveKopSettings();
+  closeKopModal();
+  renderMainKopPreview();
+}
+
+function removeKopLogo() {
+  kopSettings.logo = '';
+  const prev = document.getElementById('kopLogoPreview');
+  prev.removeAttribute('src');
+  prev.style.display = 'none';
+  document.getElementById('kopLogoRemove').style.display = 'none';
+  document.getElementById('kopLogoFile').value = '';
+  toggleKopLogoSettings();
+  updateKopPreview();
+  renderMainKopPreview();
+}
+
+function bindKopModalInputs() {
+  const panel = document.getElementById('kopFormPanel');
+  if (!panel || panel.dataset.bound) return;
+  panel.dataset.bound = '1';
+  panel.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', updateKopPreview);
+    el.addEventListener('change', updateKopPreview);
+  });
+  document.getElementById('kopEnabled')?.addEventListener('change', updateKopPreview);
+  document.getElementById('kopLogoFile')?.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      kopSettings.logo = ev.target.result;
+      const prev = document.getElementById('kopLogoPreview');
+      prev.src = kopSettings.logo;
+      prev.style.display = 'inline-block';
+      document.getElementById('kopLogoRemove').style.display = 'inline-flex';
+      toggleKopLogoSettings();
+      updateKopPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('kopModalOverlay')?.addEventListener('click', e => {
+    if (e.target.id === 'kopModalOverlay') closeKopModal();
+  });
+}
+
+function save() {
+  localStorage.setItem('soal_data', JSON.stringify(questions));
+}
+
+function savePrintSettings() {
+  localStorage.setItem('soal_print_settings', JSON.stringify(printSettings));
+}
+
+function loadPrintSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('soal_print_settings') || 'null');
+    if (saved && typeof saved === 'object') printSettings = { ...DEFAULT_PRINT_SETTINGS, ...saved };
+  } catch (e) { printSettings = { ...DEFAULT_PRINT_SETTINGS }; }
+}
+
+function applyPrintSettingsToUI() {
+  const s = printSettings;
+  document.getElementById('printFontSize').value = s.fontSize;
+  document.getElementById('printPaper').value = s.paper || 'A4';
+  document.getElementById('printMarginTop').value = s.marginTop;
+  document.getElementById('printMarginBottom').value = s.marginBottom;
+  document.getElementById('printMarginLeft').value = s.marginLeft;
+  document.getElementById('printMarginRight').value = s.marginRight;
+  document.getElementById('printQuestionGap').value = s.questionGap;
+}
+
+function readPrintSettingsFromUI() {
+  const num = (id, def) => {
+    const v = parseFloat(document.getElementById(id).value);
+    return Number.isFinite(v) ? v : def;
+  };
+  return {
+    fontSize: Math.min(28, Math.max(8, num('printFontSize', 16))),
+    paper: document.getElementById('printPaper').value || 'A4',
+    marginTop: Math.max(0, num('printMarginTop', 6)),
+    marginBottom: Math.max(0, num('printMarginBottom', 6)),
+    marginLeft: Math.max(0, num('printMarginLeft', 6)),
+    marginRight: Math.max(0, num('printMarginRight', 6)),
+    questionGap: Math.max(0, num('printQuestionGap', 1))
+  };
+}
+
+function bindPrintSettingsInputs() {
+  const ids = ['printFontSize','printPaper','printMarginTop','printMarginBottom',
+    'printMarginLeft','printMarginRight','printQuestionGap'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('change', () => {
+      printSettings = readPrintSettingsFromUI();
+      savePrintSettings();
+    });
+  });
+}
+
+function getPrintSettings() {
+  return { ...printSettings };
+}
+
+const PAPER_PRESETS = {
+  A4:     { pageSize: '210mm 297mm',  w: 210, h: 297, dialog: 'A4', printPick: 'A4' },
+  A5:     { pageSize: '148mm 210mm',  w: 148, h: 210, dialog: 'A5', printPick: 'A5' },
+  Letter: { pageSize: '215.9mm 279.4mm', w: 216, h: 279, dialog: 'Letter / US Letter', printPick: 'Letter (8,5 × 11 in)' },
+  Legal:  { pageSize: '215.9mm 355.6mm', w: 216, h: 356, dialog: 'Legal', printPick: 'Legal (8,5 × 14 in)' },
+  F4:     { pageSize: '210mm 330mm',  w: 210, h: 330, dialog: 'F4 / Folio (210×330 mm)', printPick: '8,5 × 13 in (F4 / Folio)' }
+};
+
+function getPrintDialogHint(paperKey) {
+  const p = getPaperPreset(paperKey);
+  return p.printPick || p.dialog;
+}
+
+function showPrintPaperHint() {
+  const paper = document.getElementById('printPaper').value || 'A4';
+  const p = getPaperPreset(paper);
+  let msg = 'PETUNJUK CETAK — UKURAN KERTAS\n\n';
+  msg += 'Layout soal disesuaikan dengan pilihan "Kertas" di toolbar.\n';
+  msg += 'Saat dialog cetak browser muncul, pilih ukuran kertas yang sama.\n\n';
+  if (paper === 'F4') {
+    msg += 'Untuk kertas F4 (210 × 330 mm):\n';
+    msg += '• Pilih ukuran: 8,5 × 13 inci\n';
+    msg += '  (bisa berlabel "F4", "Folio", "8.5 x 13 in", atau sejenisnya)\n';
+    msg += '• Orientasi: Portrait\n';
+    msg += '• Skala: 100% (hindari "Fit to page" jika memungkinkan)\n';
+  } else {
+    msg += 'Untuk ' + p.dialog + ':\n';
+    msg += '• Pilih: ' + getPrintDialogHint(paper) + '\n';
+    msg += '• Orientasi: Portrait\n';
+    msg += '• Skala: 100%';
+  }
+  alert(msg);
+}
+
+function getPaperPreset(key) {
+  return PAPER_PRESETS[key] || PAPER_PRESETS.A4;
+}
+
+function resetApp() {
+  const ok = confirm(
+    'Reset aplikasi akan menghapus semua data yang tersimpan (bank soal + pengaturan cetak + kop soal) di browser ini.\n\nLanjutkan?'
+  );
+  if (!ok) return;
+  try {
+    localStorage.removeItem('soal_data');
+    localStorage.removeItem('soal_print_settings');
+    localStorage.removeItem('soal_kop_settings');
+  } catch (e) {
+    // ignore
+  }
+  questions = [];
+  printSettings = { ...DEFAULT_PRINT_SETTINGS };
+  kopSettings = { ...DEFAULT_KOP_SETTINGS };
+  applyPrintSettingsToUI();
+  save();
+  render();
+  location.reload();
+}
+
+const typeLabel = { pg:'Pilihan Ganda', isian:'Isian', esai:'Esai' };
+const badgeClass = { pg:'badge-pg', isian:'badge-isian', esai:'badge-esai' };
+const PG_FORMAT_GRID = 'grid-acbd';
+const PG_FORMAT_VERTICAL = 'vertical';
+const pgFormatLabel = {
+  [PG_FORMAT_GRID]: 'A|C / B|D',
+  [PG_FORMAT_VERTICAL]: 'A/B/C/D'
+};
+
+function getPgFormat(q) {
+  return q.pgFormat === PG_FORMAT_VERTICAL ? PG_FORMAT_VERTICAL : PG_FORMAT_GRID;
+}
+
+function setPgFormatRadio(value) {
+  const el = document.querySelector(`input[name="pgFormat"][value="${value}"]`);
+  if (el) el.checked = true;
+}
+
+function openModal(type, editId=null) {
+  document.getElementById('modalOverlay').classList.add('active');
+  document.getElementById('questionType').value = type;
+  document.getElementById('editId').value = editId || '';
+  currentQImage = null;
+  optionImages = {};
+
+  // reset
+  document.getElementById('questionText').value = '';
+  document.getElementById('isianAnswer').value = '';
+  document.getElementById('esaiAnswer').value = '';
+  resetQImageFields();
+  document.getElementById('optionsContainer').innerHTML = '';
+
+  // section visibility
+  document.getElementById('pgSection').style.display = type==='pg' ? 'block' : 'none';
+  document.getElementById('isianSection').style.display = type==='isian' ? 'block' : 'none';
+  document.getElementById('esaiSection').style.display = type==='esai' ? 'block' : 'none';
+
+  document.getElementById('modalTitle').textContent = (editId?'Edit ':'Tambah ') + typeLabel[type];
+
+  if (type==='pg') {
+    setPgFormatRadio(PG_FORMAT_GRID);
+    if (!editId) { addOption(); addOption(); }
+  }
+
+  if (editId) {
+    const q = questions.find(x=>x.id===editId);
+    document.getElementById('questionText').value = q.text;
+    if (q.image) {
+      currentQImage = q.image;
+      document.getElementById('qImageWidth').value = normalizeImageWidth(q.imageWidth);
+      document.getElementById('qImagePosition').value = q.imagePosition || 'below';
+      showQImage(q.image);
+    }
+    if (type==='pg') {
+      setPgFormatRadio(getPgFormat(q));
+      q.options.forEach((opt,i)=>{
+        if (opt.image) optionImages[i] = opt.image;
+        addOption(opt.text, i===q.correct, opt.image, opt.imageWidth || 'auto');
+      });
+    } else if (type==='isian') {
+      document.getElementById('isianAnswer').value = q.answer || '';
+    } else if (type==='esai') {
+      document.getElementById('esaiAnswer').value = q.answer || '';
+    }
+  }
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.add('active') && void 0;
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function getQImagePosition() {
+  return document.getElementById('qImagePosition').value || 'below';
+}
+
+function normalizeImageWidth(val) {
+  if (val === null || val === undefined || val === '') return 'auto';
+  return String(val).trim() || 'auto';
+}
+
+function imageWidthToCss(val, defaultMax) {
+  const raw = normalizeImageWidth(val);
+  const max = defaultMax || '100%';
+  if (raw === 'auto') return `max-width:${max};width:auto;height:auto;`;
+  const px = /^\d+$/.test(raw) ? raw + 'px' : raw;
+  return `width:${px};max-width:100%;height:auto;`;
+}
+
+function getQImageWidthStyle() {
+  return imageWidthToCss(document.getElementById('qImageWidth').value, '250px');
+}
+
+function updateQImagePreviewLayout(imgSrc) {
+  const wrap = document.getElementById('qImagePreviewWrap');
+  if (!wrap || wrap.style.display === 'none') return;
+  const pos = getQImagePosition();
+  const sample = document.getElementById('questionText').value.trim() || 'Teks pertanyaan';
+  const src = imgSrc || document.getElementById('qImagePreview')?.src || '';
+  const imgHtml = `<img id="qImagePreview" class="img-preview q-inline-img q-head-img" alt="" src="${src}" style="${getQImageWidthStyle()}display:inline-block;vertical-align:middle;">`;
+  const previewText = escapeHtml(sample);
+  const hang1 = getQuestionHangStyle(1, false);
+  const hangSpacer = getQuestionHangStyle(1, true);
+  const textRow = `<div class="q-hang-line q-head-row" style="${hang1}"><b>1.</b> <span id="qImagePreviewText" class="q-preview-txt">${previewText}</span></div>`;
+  const imgRow = `<div class="q-hang-line q-head-row" style="${hangSpacer}"><span class="q-head-img-wrap">${imgHtml}</span></div>`;
+
+  if (pos === 'left') {
+    const previewNumLbl = '<span class="opt-lbl q-num-lbl"><b>1.</b></span>';
+    wrap.innerHTML = `<span class="q-head-run">${previewNumLbl} ${imgHtml}<span id="qImagePreviewText" class="q-preview-txt q-head-txt"> ${previewText}</span></span>`;
+  } else if (pos === 'right') {
+    const previewNumLbl = '<span class="opt-lbl q-num-lbl"><b>1.</b></span>';
+    wrap.innerHTML = `<span class="q-head-run"><span id="qImagePreviewText" class="q-preview-txt q-head-txt">${previewNumLbl} ${previewText}</span> ${imgHtml}</span>`;
+  } else if (pos === 'above') {
+    wrap.innerHTML = `<div class="q-head-block">${imgRow}${textRow}</div>`;
+  } else {
+    wrap.innerHTML = `<div class="q-head-block">${textRow}${imgRow}</div>`;
+  }
+  wrap.className = 'q-image-preview-wrap q-inline-run';
+  wrap.style.display = 'block';
+}
+
+function resetQImageFields() {
+  currentQImage = null;
+  document.getElementById('qImageWidth').value = 'auto';
+  document.getElementById('qImagePosition').value = 'below';
+  document.getElementById('qImageSettings').style.display = 'none';
+  document.getElementById('qImagePreviewWrap').style.display = 'none';
+  document.getElementById('qImageRemove').style.display = 'none';
+}
+
+function showQImage(src){
+  document.getElementById('qImageRemove').style.display = 'inline-flex';
+  document.getElementById('qImageSettings').style.display = 'flex';
+  document.getElementById('qImagePreviewWrap').style.display = 'block';
+  updateQImagePreviewLayout(src);
+  document.getElementById('qImageWidth').oninput = updateQImagePreviewLayout;
+  document.getElementById('qImagePosition').onchange = updateQImagePreviewLayout;
+  const qt = document.getElementById('questionText');
+  if (qt && !qt.dataset.imgPreviewBound) {
+    qt.dataset.imgPreviewBound = '1';
+    qt.addEventListener('input', updateQImagePreviewLayout);
+  }
+}
+
+function handleQImage(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => { currentQImage = ev.target.result; showQImage(currentQImage); };
+  r.readAsDataURL(file);
+  e.target.value='';
+}
+
+function removeQImage(){
+  resetQImageFields();
+}
+
+function readQImageMetaFromForm() {
+  return {
+    imageWidth: normalizeImageWidth(document.getElementById('qImageWidth').value),
+    imagePosition: getQImagePosition()
+  };
+}
+
+function getQuestionImageStyle(q) {
+  return imageWidthToCss(q.imageWidth);
+}
+
+function getOptionImageStyle(o) {
+  return imageWidthToCss(o.imageWidth, '100%');
+}
+
+function renderOptionImageHtml(o, extraClass) {
+  if (!o.image) return '';
+  const cls = extraClass ? ` ${extraClass}` : '';
+  return `<img src="${o.image}" class="opt-img${cls}" style="${getOptionImageStyle(o)}display:inline-block;vertical-align:top;" alt="">`;
+}
+
+function renderQuestionImageTag(q, imgClass, asBlock) {
+  if (!q.image) return '';
+  const cls = imgClass || 'q-img';
+  const disp = asBlock
+    ? 'display:block;margin:0.2em 0;'
+    : 'display:inline-block;vertical-align:middle;';
+  return `<img src="${q.image}" class="${cls} q-inline-img q-head-img" style="${getQuestionImageStyle(q)}${disp}" alt="">`;
+}
+
+function getQuestionNumIndentCh(num) {
+  return String(num).length + 1;
+}
+
+function getQuestionHangStyle(num, spacerOnly = false) {
+  const ch = getQuestionNumIndentCh(num);
+  return spacerOnly ? `padding-left:${ch}ch;` : `padding-left:${ch}ch;text-indent:-${ch}ch;`;
+}
+
+function buildQuestionTextRow(num, text) {
+  const t = (text || '').trim();
+  const style = getQuestionHangStyle(num, false);
+  const inner = t ? `<b>${num}.</b> ${escapeHtml(t)}` : `<b>${num}.</b>`;
+  return `<div class="q-hang-line q-text-row" style="${style}">${inner}</div>`;
+}
+
+function buildQuestionSpacerRow(num, bodyHtml, extraClass = 'q-head-row') {
+  const style = getQuestionHangStyle(num, true);
+  return `<div class="q-hang-line ${extraClass}" style="${style}">${bodyHtml}</div>`;
+}
+
+/** Gambar atas/bawah: sejajar dengan teks setelah nomor (pola grid seperti opsi A.) */
+function renderQuestionStackedHeader(q, num, imgClass, imgFirst) {
+  const t = (q.text || '').trim();
+  const img = renderQuestionImageTag(q, imgClass, true);
+  if (num == null) {
+    const textHtml = t ? `<div style="font-weight:600;margin-bottom:6px;">${escapeHtml(t)}</div>` : '';
+    return imgFirst ? `${img}${textHtml}` : `${textHtml}${img}`;
+  }
+  const textRow = buildQuestionTextRow(num, t);
+  const imgRow = buildQuestionSpacerRow(num, `<span class="q-head-img-wrap">${img}</span>`);
+  const inner = imgFirst ? imgRow + textRow : textRow + imgRow;
+  return `<div class="q-head-block">${inner}</div>`;
+}
+
+/** Header soal: kiri = 1. [gambar] teks | kanan = 1. teks [gambar] (sama pola opsi A.) */
+function renderQuestionHeaderHtml(q, num, imgClass) {
+  const pos = q.imagePosition || 'below';
+  const t = (q.text || '').trim();
+  const numPart = num != null ? `<b>${num}.</b>` : '';
+  const textPart = t ? (num != null ? ` ${escapeHtml(t)}` : escapeHtml(t)) : '';
+
+  if (q.image && pos === 'left') {
+    const img = renderQuestionImageTag(q, imgClass, false);
+    const gap = numPart || textPart ? ' ' : '';
+    return `<p class="q-text q-inline-run"><span class="q-head-run">${numPart}${gap}${img}<span class="q-head-txt">${textPart}</span></span></p>`;
+  }
+  if (q.image && pos === 'right') {
+    const img = renderQuestionImageTag(q, imgClass, false);
+    return `<p class="q-text q-inline-run"><span class="q-head-run"><span class="q-head-txt">${numPart}${textPart}</span>${numPart || textPart ? ' ' : ''}${img}</span></p>`;
+  }
+  if (q.image && pos === 'above') {
+    return renderQuestionStackedHeader(q, num, imgClass, true);
+  }
+  if (!q.image) {
+    if (num != null) return buildQuestionTextRow(num, t);
+    if (!t) return '';
+    return `<div style="font-weight:600;margin-bottom:6px;">${escapeHtml(t)}</div>`;
+  }
+  return renderQuestionStackedHeader(q, num, imgClass, false);
+}
+
+function renderPGOptionLine(o, oi, opts) {
+  const highlight = opts.highlight || false;
+  const correct = opts.correct != null ? opts.correct : -1;
+  const imgClass = opts.imgClass || '';
+  const letter = String.fromCharCode(65 + oi);
+  const text = (o.text || '').trim();
+  const img = o.image ? renderOptionImageHtml(o, imgClass) : '';
+  const tag = highlight && oi === correct ? '<span class="correct-tag"> ✓ Benar</span>' : '';
+  let content = '';
+  if (text) content += escapeHtml(text);
+  if (text && img) content += ' ';
+  content += img;
+  content += tag;
+  if (!content) content = '—';
+  return `<div class="opt-row"><span class="opt-lbl">${letter}.</span><span class="opt-body">${content}</span></div>`;
+}
+
+function renderQuestionHeaderForCard(q) {
+  return renderQuestionHeaderHtml(q, null, 'img-preview');
+}
+
+function getOptionRowByIdx(idx) {
+  return [...document.querySelectorAll('.option-row')].find(r => parseInt(r.dataset.idx, 10) === idx);
+}
+
+function showOptImageSettings(row) {
+  const settings = row.querySelector('.opt-img-settings');
+  if (settings) settings.style.display = 'flex';
+}
+
+function addOption(text='', checked=false, image=null, imageWidth='auto') {
+  const container = document.getElementById('optionsContainer');
+  const idx = container.children.length;
+  const letter = String.fromCharCode(65+idx);
+  if (image) optionImages[idx] = image;
+  const w = normalizeImageWidth(imageWidth);
+  const div = document.createElement('div');
+  div.className = 'option-row';
+  div.dataset.idx = idx;
+  div.innerHTML = `
+    <input type="radio" name="correctOpt" ${checked?'checked':''} value="${idx}">
+    <span class="option-letter">${letter}.</span>
+    <input type="text" class="opt-text" placeholder="Teks pilihan (opsional jika ada gambar)" value="${escapeAttr(text)}">
+    <button type="button" class="btn btn-gray btn-sm" onclick="triggerOptImage(${idx})">🖼️</button>
+    <button type="button" class="btn btn-red btn-sm" onclick="removeOption(this)">✕</button>
+    <input type="file" accept="image/*" style="display:none" class="opt-img-file" onchange="handleOptImage(event,${idx})">
+    <div class="opt-img-settings img-settings" style="${image?'':'display:none;'}">
+      <label>Lebar (px):</label>
+      <input type="text" class="opt-img-width" value="${escapeAttr(w)}" placeholder="auto" title="Angka atau auto">
+      <button type="button" class="btn btn-red btn-sm" onclick="removeOptImage(${idx})">Hapus Gambar</button>
+    </div>
+    <img class="img-preview-sm opt-img-prev" style="${image?'':'display:none;'}" ${image?`src="${image}"`:''} alt="">
+  `;
+  container.appendChild(div);
+  if (image) {
+    const row = getOptionRowByIdx(idx);
+    updateOptImagePreview(row);
+    const wInp = row.querySelector('.opt-img-width');
+    if (wInp) wInp.addEventListener('input', () => updateOptImagePreview(row));
+  }
+}
+function updateOptImagePreview(row) {
+  const prev = row.querySelector('.opt-img-prev');
+  const wInp = row.querySelector('.opt-img-width');
+  const src = optionImages[parseInt(row.dataset.idx, 10)] || prev?.getAttribute('src') || '';
+  if (!prev || !src) return;
+  prev.src = src;
+  prev.style.cssText = 'display:block;flex:1 1 100%;margin-top:4px;' + getOptionImageStyle({ imageWidth: wInp?.value || 'auto' });
+}
+function triggerOptImage(idx){
+  const row = getOptionRowByIdx(idx);
+  if (row) row.querySelector('.opt-img-file').click();
+}
+function handleOptImage(e, idx){
+  const file = e.target.files[0]; if(!file) return;
+  const row = getOptionRowByIdx(idx);
+  const r = new FileReader();
+  r.onload = ev => {
+    optionImages[idx] = ev.target.result;
+    const wInp = row.querySelector('.opt-img-width');
+    showOptImageSettings(row);
+    updateOptImagePreview(row);
+    if (wInp && !wInp.dataset.bound) {
+      wInp.dataset.bound = '1';
+      wInp.addEventListener('input', () => updateOptImagePreview(row));
+    }
+  };
+  r.readAsDataURL(file);
+  e.target.value='';
+}
+function removeOptImage(idx) {
+  const row = getOptionRowByIdx(idx);
+  if (!row) return;
+  delete optionImages[idx];
+  const prev = row.querySelector('.opt-img-prev');
+  prev.src = '';
+  prev.style.display = 'none';
+  row.querySelector('.opt-img-settings').style.display = 'none';
+  const wInp = row.querySelector('.opt-img-width');
+  if (wInp) wInp.value = 'auto';
+  row.querySelector('.opt-img-file').value = '';
+}
+function removeOption(btn){
+  const row = btn.closest('.option-row');
+  delete optionImages[parseInt(row.dataset.idx, 10)];
+  row.remove();
+  [...document.getElementById('optionsContainer').children].forEach((r,i)=>{
+    r.dataset.idx = i;
+    r.querySelector('.option-letter').textContent = String.fromCharCode(65+i)+'.';
+    r.querySelector('input[type=radio]').value = i;
+    const file = r.querySelector('.opt-img-file');
+    file.setAttribute('onchange', `handleOptImage(event,${i})`);
+    const imgBtn = r.querySelector('.btn-gray');
+    if (imgBtn) imgBtn.setAttribute('onclick', `triggerOptImage(${i})`);
+    const rmImg = r.querySelector('.opt-img-settings .btn-red');
+    if (rmImg) rmImg.setAttribute('onclick', `removeOptImage(${i})`);
+  });
+}
+
+function saveQuestion(){
+  const type = document.getElementById('questionType').value;
+  const text = document.getElementById('questionText').value.trim();
+  const editId = document.getElementById('editId').value;
+  if(!text && !currentQImage){ alert('Isi pertanyaan atau tambahkan gambar pertanyaan!'); return; }
+
+  let q = { id: editId || ('q'+Date.now()), type, text, image: currentQImage };
+  if (currentQImage) Object.assign(q, readQImageMetaFromForm());
+
+  if(type==='pg'){
+    const rows = [...document.querySelectorAll('.option-row')];
+    if(rows.length<2){ alert('Minimal 2 pilihan!'); return; }
+    let opts = [], correct = -1;
+    rows.forEach((r,i)=>{
+      const t = r.querySelector('.opt-text').value.trim();
+      const imgData = optionImages[i] || null;
+      const imgW = normalizeImageWidth(r.querySelector('.opt-img-width')?.value || 'auto');
+      opts.push({
+        text: t,
+        image: imgData,
+        imageWidth: imgData ? imgW : undefined
+      });
+      if(r.querySelector('input[type=radio]').checked) correct = i;
+    });
+    if(opts.some(o=>!o.text && !o.image)){ alert('Setiap pilihan harus berisi teks atau gambar!'); return; }
+    if(correct===-1){ alert('Pilih jawaban yang benar!'); return; }
+    q.options = opts; q.correct = correct;
+    q.pgFormat = document.querySelector('input[name="pgFormat"]:checked')?.value || PG_FORMAT_GRID;
+  } else if(type==='isian'){
+    q.answer = document.getElementById('isianAnswer').value.trim();
+    if(!q.answer){ alert('Isi kunci jawaban!'); return; }
+  } else if(type==='esai'){
+    q.answer = document.getElementById('esaiAnswer').value.trim();
+  }
+
+  if(editId){
+    const i = questions.findIndex(x=>x.id===editId);
+    questions[i] = q;
+  } else {
+    questions.push(q);
+  }
+  save(); render(); closeModal();
+}
+
+function deleteQuestion(id){
+  if(confirm('Hapus soal ini?')){
+    questions = questions.filter(x=>x.id!==id);
+    save(); render();
+  }
+}
+
+function render(){
+  const list = document.getElementById('questionList');
+  const filter = document.getElementById('filterType').value;
+  const search = document.getElementById('searchBox').value.toLowerCase();
+
+  // stats
+  document.getElementById('statTotal').textContent = questions.length;
+  document.getElementById('statPG').textContent = questions.filter(q=>q.type==='pg').length;
+  document.getElementById('statIsian').textContent = questions.filter(q=>q.type==='isian').length;
+  document.getElementById('statEsai').textContent = questions.filter(q=>q.type==='esai').length;
+
+  let filtered = questions.filter(q=>{
+    if(filter!=='all' && q.type!==filter) return false;
+    if(search && !q.text.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if(filtered.length===0){
+    list.innerHTML = `<div class="card empty-state">📭 Belum ada soal. Klik tombol di atas untuk menambah soal.</div>`;
+    return;
+  }
+
+  function renderQuestionCard(q, num){
+    let body = '';
+    if(q.type==='pg'){
+      body = renderPGOptionsBody(q, true);
+    } else if(q.type==='isian'){
+      body = `<div class="answer-box"><strong>Kunci:</strong> ${escapeHtml(q.answer)}</div>`;
+    } else if(q.type==='esai'){
+      body = q.answer ? `<div class="answer-box"><strong>Pedoman:</strong> ${escapeHtml(q.answer)}</div>` : '<em style="color:#9ca3af;">Tanpa pedoman jawaban</em>';
+    }
+    return `
+    <div class="card question-item ${q.type}">
+      <div class="q-header">
+        <div>
+          <span class="badge ${badgeClass[q.type]}">${typeLabel[q.type]}</span>
+          ${q.type==='pg' ? `<span class="badge badge-gray" style="background:#6b7280;margin-left:4px;">${pgFormatLabel[getPgFormat(q)]}</span>` : ''}
+          <span style="color:#9ca3af; font-size:13px;"> #${num}</span>
+        </div>
+        <div class="q-actions">
+          <button class="btn btn-orange btn-sm" onclick="openModal('${q.type}','${q.id}')">✏️ Edit</button>
+          <button class="btn btn-red btn-sm" onclick="deleteQuestion('${q.id}')">🗑️ Hapus</button>
+        </div>
+      </div>
+      ${renderQuestionHeaderForCard(q)}<div class="q-options-wrap">${body}</div>
+    </div>`;
+  }
+
+  if(filter==='all'){
+    const pgList = questions.filter(q=>q.type==='pg');
+    const isianList = questions.filter(q=>q.type==='isian');
+    const esaiList = questions.filter(q=>q.type==='esai');
+    const parts = [];
+    if(pgList.length){
+      parts.push('<div class="section-title-ui">A. Pilihan Ganda</div>');
+      pgList.forEach((q,i)=> parts.push(renderQuestionCard(q, i+1)));
+    }
+    if(isianList.length){
+      parts.push('<div class="section-title-ui">B. Isian</div>');
+      isianList.forEach((q,i)=> parts.push(renderQuestionCard(q, i+1)));
+    }
+    if(esaiList.length){
+      parts.push('<div class="section-title-ui">C. Esai</div>');
+      esaiList.forEach((q,i)=> parts.push(renderQuestionCard(q, i+1)));
+    }
+    list.innerHTML = parts.join('');
+  } else {
+    list.innerHTML = filtered.map((q,i)=> renderQuestionCard(q, i+1)).join('');
+  }
+}
+
+function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+const PG_LONG_CHARS = 20;
+const PG_LINE_COL = 26;
+const PG_LINE_STACK = 32;
+const PG_OPT_MARGIN_LEFT = '1.15em';
+
+function pgOptionStylesScreen() {
+  return `.opt-grid{width:100%;max-width:100%;margin-top:6px;border-collapse:collapse;table-layout:fixed;}
+.opt-grid td{width:50%;vertical-align:top;padding:0 1em 0 0;overflow:hidden;word-wrap:break-word;}
+.opt-grid td+td{padding:0 0 0 1em;}
+.opt-entry{margin:0.15em 0;max-width:100%;overflow:hidden;}
+.opt-row{display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:0.25em;line-height:1.45;max-width:100%;}
+.opt-lbl{font-weight:700;}
+.opt-body{min-width:0;overflow-wrap:anywhere;word-wrap:break-word;word-break:break-all;}
+.opt-img{max-width:100%;height:auto;margin-top:4px;display:block;}`;
+}
+
+function printDocumentStyles() {
+  const s = getPrintSettings();
+  const k = getKopSettings();
+  const p = getPaperPreset(s.paper);
+  const contentWpx = Math.max(100, Math.round((p.w - s.marginLeft - s.marginRight) * 96 / 25.4));
+  const sectionSize = s.fontSize + 2;
+  const kopCss = k.enabled ? generateKopCss(k, true, contentWpx) : '';
+  const pageRule = `size:${p.pageSize};margin:${s.marginTop}mm ${s.marginRight}mm ${s.marginBottom}mm ${s.marginLeft}mm;`;
+  return `@page{${pageRule}}
+@media print{
+  @page{${pageRule}}
+  html,body{width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;}
+   body{display:flex!important;flex-direction:column!important;align-items:center!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .print-sheet{width:100%;max-width:100%;margin:0;padding:0;box-sizing:border-box;}
+  .print-flow{column-fill:auto;-webkit-column-fill:auto;}
+  .print-kop-wrap{break-after:avoid;page-break-after:avoid;}
+  .opt-grid-print,table{page-break-inside:auto;}
+  .q{page-break-inside:avoid;break-inside:avoid;}
+}
+html,body{margin:0;padding:0;}
+body{font-family:"Times New Roman",Times,serif;font-size:${s.fontSize}px;line-height:1.4;color:#000;margin:0;padding:0;display:flex;flex-direction:column;align-items:center;}
+.print-sheet{width:100%;max-width:100%;margin:0;padding:0;box-sizing:border-box;}
+${kopCss}
+.print-flow{
+  column-count:2;column-gap:2.2em;column-rule:1.5px solid #000;
+  column-fill:auto;-webkit-column-fill:auto;
+  text-align:justify;
+}
+.section-title{font-weight:700;font-size:${sectionSize}px;margin:1ch 0 0.35em 0;break-after:avoid;page-break-after:avoid;}
+.print-kop-wrap+.section-title{margin-top:0;}
+.q{margin:0 0 ${s.questionGap}px 0;overflow:hidden;}
+.q-text{margin:0 0 0.2em 0;text-align:left;}
+.q-inline-run{text-align:left;}
+.q-head-run{display:inline-flex;align-items:center;gap:0.4em;max-width:100%;flex-wrap:wrap;}
+.q-head-run img,.q-head-run .q-head-img{display:block;flex-shrink:0;margin:0;height:auto;max-height:2.5em;}
+.q-head-txt{flex:0 1 auto;min-width:0;}
+.q-head-block{margin:0 0 0.2em 0;max-width:100%;}
+.q-head-row{margin:0.1em 0;}
+.q-hang-line{margin:0.1em 0;max-width:100%;box-sizing:border-box;text-align:justify;line-height:1.35;word-wrap:break-word;overflow-wrap:break-word;word-break:normal;}
+.q-num-spacer{visibility:hidden;pointer-events:none;user-select:none;}
+.q-head-img-wrap img{display:block!important;margin:0;height:auto;}
+.q-inline-run img,.q-inline-run .q-img{display:inline-block!important;vertical-align:middle;}
+.q-img-wrap{display:block;margin:0.2em 0;}
+.q-img{height:auto;}
+.opt-row{display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:0.25em;align-items:start;line-height:1.35;margin:0.1em 0;max-width:100%;}
+.opt-lbl{font-weight:700;}
+.opt-body{min-width:0;overflow-wrap:break-word;word-wrap:break-word;word-break:normal;text-align:left;}
+.opt-row img,.opt-row .opt-img{display:inline-block!important;vertical-align:middle;margin:0;}
+.opt-grid-print{width:100%;margin:0.15em 0 0 ${PG_OPT_MARGIN_LEFT};border-collapse:collapse;table-layout:fixed;}
+.opt-grid-print td{width:50%;vertical-align:top;padding:0.1em 0.5em 0.15em 0.25em;overflow:hidden;
+  word-wrap:break-word;word-break:break-all;overflow-wrap:anywhere;line-height:1.35;}
+.opt-grid-print td.og-cell-r{padding-left:0.85em;}
+.opt-l{margin:0 0 0.05em 0;}
+.opt-t{margin:0 0 0.1em 0;text-align:justify;}
+.q-text-row{margin:0 0 0.2em 0;}
+.q-answer-row{margin:0.1em 0 0;}
+.opt-answer{display:flex;align-items:flex-end;gap:1ch;margin:0.15em 0 0;}
+.opt-dots{flex:1;min-width:0;border-bottom:1px dotted #000;height:1em;}
+.opt-esai-box{border-bottom:1px solid #000;min-height:0;height:1em;margin:0.15em 0 0;}
+.opt-list-vertical{margin:0.15em 0 0 ${PG_OPT_MARGIN_LEFT};}
+.opt-vertical-item{margin:0.12em 0;overflow:hidden;word-break:break-all;}
+.export-cols{width:100%;border-collapse:collapse;table-layout:fixed;}
+.export-col-l{width:50%;vertical-align:top;padding:0 1.1em 0 0;border-right:1.5px solid #000;}
+.export-col-r{width:50%;vertical-align:top;padding:0 0 0 1.1em;}
+.is-correct{background:#e8f5e9;border-radius:4px;padding:2px 6px;}`;
+}
+
+function isLongOptionText(text) {
+  return (text || '').length > PG_LONG_CHARS;
+}
+
+/** Pecah teks ke beberapa baris (paksa break jika tanpa spasi) */
+function wrapTextToLines(text, lineLen) {
+  const t = (text || '').trim();
+  if (!t) return [''];
+  const lines = [];
+  let rest = t;
+  while (rest.length > 0) {
+    if (rest.length <= lineLen) {
+      lines.push(rest);
+      break;
+    }
+    let cut = rest.lastIndexOf(' ', lineLen);
+    if (cut < 1) cut = lineLen;
+    lines.push(rest.slice(0, cut));
+    rest = rest.slice(cut).trimStart();
+  }
+  return lines;
+}
+
+function renderPGOptionCell(o, oi) {
+  return renderPGOptionLine(o, oi, {});
+}
+
+function renderPGOptionEntry(o, oi, correct, highlight) {
+  const correctCls = highlight && oi === correct ? ' is-correct' : '';
+  return `<div class="opt-entry opt-short${correctCls}">${renderPGOptionLine(o, oi, {
+    highlight, correct, imgClass: highlight ? ' img-preview-sm' : ''
+  })}</div>`;
+}
+
+function renderPrintQuestion(q, num) {
+  let extra = '';
+  if (q.type === 'pg') extra = renderPGOptionsBody(q, false);
+  else if (q.type === 'isian') {
+    extra = buildQuestionSpacerRow(num, `<div class="opt-answer">Jawaban:<span class="opt-dots"></span></div>`, 'q-answer-row');
+  } else {
+    extra = buildQuestionSpacerRow(num, `<div class="opt-esai-box"></div>`, 'q-answer-row');
+  }
+  return `<div class="q">${renderQuestionHeaderHtml(q, num, 'q-img')}${extra}</div>`;
+}
+
+function collectPrintBlockItems() {
+  const items = [];
+  const pg = questions.filter(q => q.type === 'pg');
+  const isian = questions.filter(q => q.type === 'isian');
+  const esai = questions.filter(q => q.type === 'esai');
+
+  if (pg.length) {
+    items.push('<div class="section-title"><b>A. Pilihan Ganda</b></div>');
+    pg.forEach((q, i) => items.push(renderPrintQuestion(q, i + 1)));
+  }
+  if (isian.length) {
+    items.push('<div class="section-title"><b>B. Isian</b></div>');
+    isian.forEach((q, i) => items.push(renderPrintQuestion(q, i + 1)));
+  }
+  if (esai.length) {
+    items.push('<div class="section-title"><b>C. Esai</b></div>');
+    esai.forEach((q, i) => items.push(renderPrintQuestion(q, i + 1)));
+  }
+  return items;
+}
+
+function collectPrintBlocks() {
+  return collectPrintBlockItems();
+}
+
+function buildPrintHtml(autoPrint) {
+  const blocks = collectPrintBlockItems();
+  const k = getKopSettings();
+  const p = getPaperPreset(getPrintSettings().paper);
+  const kopHeader = k.enabled
+    ? `<div class="print-kop-wrap">${generateKopHtmlBody(k)}</div>`
+    : '';
+  const body = `<div class="print-sheet">${kopHeader}<div class="print-flow">${blocks.join('')}</div></div>`;
+  const printScript = autoPrint
+    ? '<script>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},700);});<\/script>'
+    : '';
+  return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<meta name="paper-size" content="${p.pageSize}">
+<title>Cetak Soal — ${escapeHtml(p.dialog)}</title>
+<style>${printDocumentStyles()}</style></head><body>${body}${printScript}</body></html>`;
+}
+
+function buildAnswerSheetHtml() {
+  const totalIsian = 10;
+  const totalEsai = 5;
+
+  const perTable = 10;
+  const totalPG = 50;
+  const numTables = totalPG / perTable;
+  let tables = '';
+  for (let t = 0; t < numTables; t++) {
+    const start = t * perTable;
+    let rows = '';
+    for (let r = 0; r < perTable; r++) {
+      const num = start + r + 1;
+      rows += `<tr><td class="no">${num}</td><td class="ltr">A</td><td class="ltr">B</td><td class="ltr">C</td><td class="ltr">D</td></tr>`;
+    }
+    tables += `<table class="pg-tbl"><tbody>${rows}</tbody></table>`;
+  }
+  const pgTables = `<div class="sec"><div class="st">I. PILIHAN BERGANDA</div><div class="pg-wrap">${tables}</div></div>`;
+
+  let isianHtml = `<div class="sec"><div class="st">II. ISIAN</div>`;
+  for (let i = 0; i < totalIsian; i++) {
+    isianHtml += `<div class="isi-l"><span class="isi-n">${i + 1}.</span><span class="isi-d"></span></div>`;
+  }
+  isianHtml += '</div>';
+
+  let esaiHtml = `<div class="sec"><div class="st">III. URAIAN</div>`;
+  for (let i = 0; i < totalEsai; i++) {
+    const dots = '<div class="es-d"></div>'.repeat(3);
+    esaiHtml += `<div class="es-q"><div class="isi-l"><span class="isi-n">${i + 1}.</span><span class="isi-d"></span></div>${dots}</div>`;
+  }
+  esaiHtml += '</div>';
+
+  const css = `*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Times New Roman',Times,serif;color:#000;background:#fff;display:flex;justify-content:center}
+.pg{margin:1mm auto;padding:0;width:165mm}
+.ttl{text-align:center;font-size:26px;font-weight:bold;letter-spacing:2px;margin-bottom:18px}
+.ib{border:1px solid #000;margin-bottom:18px;padding:10px 14px}
+.ib table{width:100%;border-collapse:collapse}
+.ib td{vertical-align:top;padding:2px 2px}
+.ib .l{font-weight:bold;white-space:nowrap;text-align:left;padding-right:0;font-size:11px;width:95px}
+.ib .cln{text-align:center;padding:2px 1px;width:8px;font-size:11px}
+.ib .v{border-bottom:1px dotted #000;min-width:100px;letter-spacing:1px;height:1.3em}
+.ib .c{width:50%}
+.sec{margin-bottom:16px}
+.st{font-weight:bold;font-size:16px;margin-bottom:8px}
+.pg-wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.pg-tbl{width:100%;border-collapse:collapse}
+.pg-tbl th,.pg-tbl td{border:1px solid #000;text-align:center;padding:2px 1px;font-size:11px;height:20px}
+.pg-tbl th{font-weight:bold;font-size:13px}
+.pg-tbl td.no{font-weight:bold}
+.pg-tbl td.ltr{font-size:13px;letter-spacing:0.5px}
+.isi-l{display:flex;align-items:center;gap:6px;margin:3px 0}
+.isi-n{font-weight:bold;min-width:22px;font-size:14px}
+.isi-d{flex:1;border-bottom:1px dotted #000;height:1.2em}
+.es-q{margin-bottom:6px}
+.es-d{border-bottom:1px dotted #000;height:1.2em;margin:2px 0 2px 28px}
+@media print{@page{size:215mm 330mm;margin:1mm 25mm}body{margin:0;padding:0}.pg{margin:0 auto;width:100%}}`;
+
+  const ident = `<div class="ib"><table><tr><td class="c"><table><tr><td class="l">NAMA</td><td class="cln">:</td><td class="v"></td></tr><tr><td class="l">KELAS</td><td class="cln">:</td><td class="v"></td></tr><tr><td class="l">MATA PELAJARAN</td><td class="cln">:</td><td class="v"></td></tr></table></td><td class="c"><table><tr><td class="l">HARI</td><td class="cln">:</td><td class="v"></td></tr><tr><td class="l">TANGGAL</td><td class="cln">:</td><td class="v"></td></tr><tr><td class="l">NILAI</td><td class="cln">:</td><td class="v"></td></tr></table></td></tr></table></div>`;
+
+  return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Lembar Jawaban</title><style>${css}</style></head><body><div class="pg"><div class="ttl">LEMBAR JAWABAN</div>${ident}${pgTables}${isianHtml}${esaiHtml}</div></body></html>`;
+}
+
+function printAnswerSheet() {
+  if (!questions.length) { alert('Belum ada soal. Silakan tambahkan soal terlebih dahulu.'); return; }
+  const w = window.open('', '_blank');
+  w.document.write(buildAnswerSheetHtml());
+  w.document.close();
+}
+
+function renderAnswerKeyQuestion(q, num) {
+  let answer = '';
+  if (q.type === 'pg' && q.options && q.options.length) {
+    const correctIdx = (q.correct != null) ? q.correct : 0;
+    const letter = String.fromCharCode(65 + correctIdx);
+    const optObj = q.options[correctIdx];
+    const optText = (optObj && typeof optObj === 'object') ? (optObj.text || '') : String(optObj || '');
+    answer = escapeHtml(letter) + '. ' + escapeHtml(optText);
+  } else if (q.type === 'isian') {
+    answer = escapeHtml(q.answer || '');
+  } else {
+    answer = escapeHtml(q.answer || '');
+  }
+  return `<div class="ak-item"><span class="ak-num">${num}.</span> <span class="ak-ans">${answer}</span></div>`;
+}
+
+function collectAnswerKeyItems() {
+  const items = [];
+  const pg = questions.filter(q => q.type === 'pg');
+  const isian = questions.filter(q => q.type === 'isian');
+  const esai = questions.filter(q => q.type === 'esai');
+
+  if (pg.length) {
+    items.push('<div class="section-title"><b>A. Pilihan Ganda</b></div>');
+    pg.forEach((q, i) => items.push(renderAnswerKeyQuestion(q, i + 1)));
+  }
+  if (isian.length) {
+    items.push('<div class="section-title"><b>B. Isian</b></div>');
+    isian.forEach((q, i) => items.push(renderAnswerKeyQuestion(q, i + 1)));
+  }
+  if (esai.length) {
+    items.push('<div class="section-title"><b>C. Esai</b></div>');
+    esai.forEach((q, i) => items.push(renderAnswerKeyQuestion(q, i + 1)));
+  }
+  return items;
+}
+
+function buildAnswerKeyHtml() {
+  const blocks = collectAnswerKeyItems();
+  const p = getPaperPreset(getPrintSettings().paper);
+  const body = `<div class="print-sheet"><div class="ak-title">KUNCI JAWABAN</div><div class="print-flow">${blocks.join('')}</div></div>`;
+  return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<meta name="paper-size" content="${p.pageSize}">
+<title>Kunci Jawaban — ${escapeHtml(p.dialog)}</title>
+<style>${printDocumentStyles()}.ak-title{text-align:center;font-size:22px;font-weight:bold;margin-bottom:12px;letter-spacing:1px}.ak-item{margin:2px 0;font-size:14px}.ak-num{font-weight:bold;margin-right:4px}</style></head><body>${body}</body></html>`;
+}
+
+function printAnswerKey() {
+  if (!questions.length) { alert('Belum ada soal. Silakan tambahkan soal terlebih dahulu.'); return; }
+  const w = window.open('', '_blank');
+  w.document.write(buildAnswerKeyHtml());
+  w.document.close();
+}
+
+function renderPGOptionsVertical(q, highlight) {
+  const html = q.options.map((o, oi) => {
+    const inner = highlight
+      ? renderPGOptionEntry(o, oi, q.correct, true, false)
+      : renderPGOptionCell(o, oi);
+    return `<div class="opt-vertical-item">${inner}</div>`;
+  }).join('');
+  return `<div class="opt-list-vertical">${html}</div>`;
+}
+
+/** Grid: baris1 A|C, baris2 B|D — atau vertikal jika pgFormat = vertical */
+function renderPGOptionsBody(q, highlight) {
+  if (getPgFormat(q) === PG_FORMAT_VERTICAL) {
+    return renderPGOptionsVertical(q, highlight);
+  }
+  const opts = q.options;
+  const split = Math.ceil(opts.length / 2);
+  const left = opts.slice(0, split);
+  const right = opts.slice(split);
+  const maxRows = Math.max(left.length, right.length);
+  let rows = '';
+  for (let r = 0; r < maxRows; r++) {
+    const oiL = r;
+    const oiR = split + r;
+    rows += '<tr>';
+    if (!highlight) {
+      rows += `<td class="og-cell">${left[r] ? renderPGOptionCell(left[r], oiL) : ''}</td>`;
+      rows += `<td class="og-cell og-cell-r">${right[r] ? renderPGOptionCell(right[r], oiR) : ''}</td>`;
+    } else {
+      rows += `<td>${left[r] ? renderPGOptionEntry(left[r], oiL, q.correct, true) : ''}</td>`;
+      rows += `<td>${right[r] ? renderPGOptionEntry(right[r], oiR, q.correct, true) : ''}</td>`;
+    }
+    rows += '</tr>';
+  }
+  const cls = highlight ? 'opt-grid' : 'opt-grid-print';
+  return `<table class="${cls}" cellpadding="0" cellspacing="0"><tbody>${rows}</tbody></table>`;
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(questions,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bank-soal.json';
+  a.click();
+}
+
+function getExportBaseName() {
+  const k = getKopSettings();
+  const raw = (k.subject || k.schoolName || 'bank-soal').trim();
+  const safe = raw.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-').slice(0, 48);
+  return safe || 'bank-soal';
+}
+
+function downloadBlob(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+function ensureExportReady() {
+  if (!questions.length) {
+    alert('Belum ada soal untuk diekspor!');
+    return false;
+  }
+  printSettings = readPrintSettingsFromUI();
+  savePrintSettings();
+  return true;
+}
+
+function measurePrintItemHeights(items) {
+  const s = getPrintSettings();
+  const p = getPaperPreset(s.paper);
+  const sheetPx = Math.round((p.w - s.marginLeft - s.marginRight) * 96 / 25.4);
+  const colPx = Math.max(200, Math.floor((sheetPx - 28) / 2));
+
+  const host = document.createElement('div');
+  host.style.cssText = `position:fixed;left:-20000px;top:0;width:${colPx}px;visibility:hidden;
+    font-family:"Times New Roman",Times,serif;font-size:${s.fontSize}px;line-height:1.4;color:#000;`;
+  const st = document.createElement('style');
+  st.textContent = printDocumentStyles();
+  host.appendChild(st);
+  const meas = document.createElement('div');
+  host.appendChild(meas);
+  document.body.appendChild(host);
+
+  const heights = items.map(html => {
+    meas.innerHTML = html;
+    return meas.scrollHeight;
+  });
+  document.body.removeChild(host);
+  return heights;
+}
+
+/** Simulasi column-fill:auto — kolom kiri diisi dulu hingga ~setengah tinggi total */
+function splitPrintItemsColumnFill(items) {
+  if (!items.length) return { left: [], right: [] };
+  const heights = measurePrintItemHeights(items);
+  const total = heights.reduce((a, b) => a + b, 0);
+  const target = total / 2;
+  const left = [];
+  const right = [];
+  let sum = 0;
+  for (let i = 0; i < items.length; i++) {
+    if (right.length === 0 && (sum + heights[i] <= target || left.length === 0)) {
+      left.push(items[i]);
+      sum += heights[i];
+    } else {
+      right.push(items[i]);
+    }
+  }
+  return { left, right };
+}
+
+function buildWordExportHtml(leftItems, rightItems) {
+  const k = getKopSettings();
+  const kopHeader = k.enabled
+    ? `<div class="print-kop-wrap">${generateKopHtmlBody(k)}</div>`
+    : '';
+  const flow = `<table class="export-cols" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td class="export-col-l" width="50%" valign="top">${leftItems.join('')}</td>
+    <td class="export-col-r" width="50%" valign="top">${rightItems.join('')}</td>
+  </tr></table>`;
+  return `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:w="urn:schemas-microsoft-com:office:word"
+  xmlns="http://www.w3.org/TR/REC-html40" lang="id">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(k.schoolName || 'Bank Soal')}</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>${printDocumentStyles()}</style>
+</head>
+<body><div class="print-sheet">${kopHeader}${flow}</div></body>
+</html>`;
+}
+
+function setExportButtonBusy(btn, busy, idleText) {
+  if (!btn) return;
+  btn.disabled = busy;
+  btn.textContent = busy ? '⏳ Memproses…' : idleText;
+}
+
+function exportPdf() {
+  if (!ensureExportReady()) return;
+  const html = buildPrintHtml(true);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (!win) {
+    URL.revokeObjectURL(url);
+    alert('Izinkan pop-up browser untuk export PDF.\nAlternatif: gunakan tombol Cetak / Preview.');
+    return;
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
+}
+
+function exportWord() {
+  if (!ensureExportReady()) return;
+  const btn = document.getElementById('btnExportWord');
+  setExportButtonBusy(btn, true);
+  try {
+    const items = collectPrintBlockItems();
+    const { left, right } = splitPrintItemsColumnFill(items);
+    const html = buildWordExportHtml(left, right);
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword;charset=utf-8' });
+    downloadBlob(blob, `${getExportBaseName()}.doc`);
+  } catch (err) {
+    alert('Gagal export Word.\n' + (err.message || err));
+  } finally {
+    setExportButtonBusy(btn, false, '📝 Export Word');
+  }
+}
+
+function importData(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(Array.isArray(data)){
+        if(confirm('Gabungkan dengan soal yang ada? (Batal = ganti semua)')){
+          questions = questions.concat(data);
+        } else { questions = data; }
+        save(); render();
+      } else alert('Format file tidak valid.');
+    }catch(err){ alert('Gagal membaca file.'); }
+  };
+  r.readAsText(file);
+  e.target.value='';
+}
+
+function printQuestions(){
+  if (!ensureExportReady()) return;
+  const p = getPaperPreset(printSettings.paper);
+  if (printSettings.paper !== 'A4') {
+    const pick = getPrintDialogHint(printSettings.paper);
+    const ok = confirm(
+      'Ukuran kertas aplikasi: ' + p.dialog + '.\n\n' +
+      'Di dialog cetak browser, pilih ukuran kertas: ' + pick + '.\n\nLanjutkan cetak?'
+    );
+    if (!ok) return;
+  }
+  const html = buildPrintHtml(true);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (!win) {
+    URL.revokeObjectURL(url);
+    alert('Izinkan pop-up browser untuk cetak.');
+    return;
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
+}
+
+loadPrintSettings();
+loadKopSettings();
+applyPrintSettingsToUI();
+bindPrintSettingsInputs();
+bindKopModalInputs();
+render();
+renderMainKopPreview();
+</script>
+</body>
+</html>
