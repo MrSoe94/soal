@@ -83,6 +83,7 @@
   .badge-pg { background: #4a6cf7; }
   .badge-isian { background: #22c55e; }
   .badge-esai { background: #f59e0b; }
+  .badge-topik { background: #7c3aed; }
   .question-item { border-left: 4px solid #4a6cf7; }
   .question-item.isian { border-left-color: #22c55e; }
   .question-item.esai { border-left-color: #f59e0b; }
@@ -106,6 +107,32 @@
     background: white; border-radius: 14px; padding: 25px;
     width: 100%; max-width: 650px;
   }
+  .add-again {
+    display: none; margin-top: 14px; padding: 12px 14px;
+    background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px;
+  }
+  .add-again .add-again-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #166534; }
+  .add-again .add-again-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .topik-row { display: flex; gap: 8px; align-items: center; }
+  .topik-row input[type=text] { flex: 1; min-width: 0; }
+  .topik-row .btn { flex-shrink: 0; }
+  #kopSubject:disabled { background: #f3f4f6; color: #4b5563; }
+  #kopSubject { text-transform: uppercase; }
+  #kopSubjectNote { display: block; margin-top: 4px; }
+  .prev-box {
+    margin-bottom: 14px; padding: 10px 12px; background: #f8fafc;
+    border: 1px solid #e5e7eb; border-left: 4px solid #94a3b8; border-radius: 10px;
+  }
+  .prev-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .prev-head-title { font-size: 13px; color: #475569; font-weight: 700; }
+  .prev-head-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .prev-body { font-size: 14px; overflow: hidden; }
+  .prev-list { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px; max-height: 220px; overflow-y: auto; }
+  .prev-list-row { display: flex; align-items: center; gap: 8px; padding: 5px 4px; border-radius: 6px; font-size: 13px; }
+  .prev-list-row.is-active { background: #eef2ff; }
+  .prev-list-num { font-weight: 700; min-width: 26px; }
+  .prev-list-txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prev-list-txt em { color: #6b7280; font-style: normal; }
   .modal h2 { margin-bottom: 18px; }
   .img-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .empty-state { text-align: center; padding: 50px; color: #9ca3af; }
@@ -215,8 +242,8 @@
 </head>
 <body>
 <header>
-  <h1>📝 Aplikasi Pembuat Soal</h1>
-  <p>Buat soal Pilihan Ganda, Isian, dan Esai • Kop soal custom • Cetak langsung</p>
+  <h1>📖 Aplikasi Pembuat Soal</h1>
+  <p>Buat soal Pilihan Ganda, Isian, dan Esai ⬢ Kop soal custom ⬢ Cetak langsung</p>
 </header>
 
 <div class="container">
@@ -232,12 +259,14 @@
       <button class="btn btn-primary" onclick="openModal('pg')">➕ Pilihan Ganda</button>
       <button class="btn btn-green" onclick="openModal('isian')">➕ Isian</button>
       <button class="btn btn-orange" onclick="openModal('esai')">➕ Esai</button>
+      <button class="btn btn-gray" onclick="addTopikPrompt()">📚a Tambah Pembelajaran</button>
+      <button class="btn btn-gray" onclick="fillDummy()">🧪 Isi Dummy</button>
       <button class="btn btn-gray" onclick="exportData()">💾 Export JSON</button>
       <button class="btn btn-gray" onclick="document.getElementById('importFile').click()">📂 Import JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-      <button class="btn btn-gray" onclick="openKopModal()">📋 Kop Soal</button>
+      <button class="btn btn-gray" onclick="openKopModal()">📋9 Kop Soal</button>
       <button class="btn btn-gray" onclick="printQuestions()">🖨️ Cetak / Preview</button>
-      <button class="btn btn-gray" onclick="printAnswerSheet()">📋 Lembar Jawaban</button>
+      <button class="btn btn-gray" onclick="printAnswerSheet()">📋9 Lembar Jawaban</button>
       <button class="btn btn-gray" onclick="printAnswerKey()">🔑 Kunci Jawaban</button>
       <button class="btn btn-gray" id="btnExportPdf" onclick="exportPdf()">📄 Export PDF</button>
       <button class="btn btn-gray" id="btnExportWord" onclick="exportWord()">📝 Export Word</button>
@@ -262,6 +291,11 @@
       </div>
       <label for="printQuestionGap">Jarak Soal (px):</label>
       <input type="number" id="printQuestionGap" min="0" max="80" value="1">
+      <label for="printPgPerRow">Pilihan jawaban:</label>
+      <select id="printPgPerRow">
+        <option value="2">2 baris — A|C / B|D</option>
+        <option value="1">1 baris — A|B|C|D</option>
+      </select>
       <div class="toolbar-font">
         <label for="printFontSize">Font:</label>
         <input type="number" id="printFontSize" min="8" max="28" value="16">
@@ -278,12 +312,15 @@
       <option value="isian">Isian</option>
       <option value="esai">Esai</option>
     </select>
+    <strong style="font-size:14px;">Pembelajaran:</strong>
+    <select id="filterTopik" style="width:auto;" onchange="render()"></select>
     <input type="text" id="searchBox" placeholder="🔍 Cari soal..." style="width:auto; flex:1; min-width:200px;" oninput="render()">
+    <small id="kopFollowNote" style="color:#6b7280;font-size:12px;"></small>
   </div>
 
   <div id="kopPreviewMain" class="kop-preview-main" style="display:none;">
     <div class="kop-preview-header">
-      <span>📋 Pratinjau Kop Soal</span>
+      <span>📋9 Pratinjau Kop Soal</span>
       <button class="btn btn-gray btn-sm" onclick="openKopModal()">✏️ Edit Kop</button>
     </div>
     <iframe id="kopPreviewMainFrame" title="Pratinjau Kop"></iframe>
@@ -299,11 +336,33 @@
     <input type="hidden" id="editId">
     <input type="hidden" id="questionType">
 
+    <div class="prev-box" id="prevBox" style="display:none;">
+      <div class="prev-head">
+        <span class="prev-head-title">📖 Soal sebelumnya — No. <span id="prevNo">0</span></span>
+        <div class="prev-head-actions">
+          <button type="button" class="btn btn-gray btn-sm" onclick="togglePrevList()">📚a Daftar soal sesi ini (<span id="prevCount">0</span>)</button>
+          <button type="button" class="btn btn-gray btn-sm" onclick="editPrevQuestion()">✏️ Edit soal ini</button>
+        </div>
+      </div>
+      <div class="prev-body" id="prevBody"></div>
+      <div class="prev-list" id="prevList" style="display:none;"></div>
+    </div>
+
+    <div class="field">
+      <label for="topikInput">Pembelajaran / Judul Soal</label>
+      <div class="topik-row">
+        <input type="text" id="topikInput" list="topikOptions" placeholder="Pilih atau ketik, mis. Agama / Bahasa Indonesia">
+        <datalist id="topikOptions"></datalist>
+        <button type="button" class="btn btn-gray btn-sm" onclick="addTopikFromForm()">➕ Tambah</button>
+      </div>
+      <small style="color:#6b7280;font-size:12px;">Soal akan dikelompokkan berdasarkan pembelajaran ini (judul berbeda saat dicetak).</small>
+    </div>
+
     <div class="field">
       <label>Pertanyaan</label>
       <textarea id="questionText" placeholder="Teks pertanyaan (opsional jika hanya gambar)..."></textarea>
       <div class="img-controls" style="margin-top:8px;">
-        <button type="button" class="btn btn-gray btn-sm" onclick="document.getElementById('qImageFile').click()">🖼️ Tambah Gambar</button>
+        <button type="button" class="btn btn-gray btn-sm" onclick="document.getElementById('qImageFile').click()">📎️ Tambah Gambar</button>
         <button type="button" class="btn btn-red btn-sm" id="qImageRemove" style="display:none;" onclick="removeQImage()">Hapus Gambar</button>
         <input type="file" id="qImageFile" accept="image/*" style="display:none" onchange="handleQImage(event)">
       </div>
@@ -352,15 +411,26 @@
       <button class="btn btn-gray" onclick="closeModal()">Batal</button>
       <button class="btn btn-primary" onclick="saveQuestion()">💾 Simpan</button>
     </div>
+
+    <div class="add-again" id="addAgainBar">
+      <div class="add-again-title">✅ Soal tersimpan. Tambah soal lagi dalam sesi ini?</div>
+      <div class="add-again-btns">
+        <button type="button" class="btn btn-primary btn-sm" onclick="answerAddAgain('pg')">➕ Pilihan Ganda</button>
+        <button type="button" class="btn btn-green btn-sm" onclick="answerAddAgain('isian')">➕ Isian</button>
+        <button type="button" class="btn btn-orange btn-sm" onclick="answerAddAgain('esai')">➕ Esai</button>
+        <button type="button" class="btn btn-gray btn-sm" onclick="answerAddAgain('no')">❌️ Tidak, selesai</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- MODAL KOP SOAL -->
 <div class="modal-overlay" id="kopModalOverlay">
   <div class="modal modal-kop">
-    <h2>📋 Pengaturan Kop Soal</h2>
+    <h2>📋9 Pengaturan Kop Soal</h2>
     <div class="kop-modal-top">
       <label><input type="checkbox" id="kopEnabled" checked> Tampilkan kop saat cetak</label>
+      <label><input type="checkbox" id="kopSubjectAuto" checked> Mata Pelajaran ikut Pembelajaran</label>
     </div>
     <div class="kop-modal-stack">
       <div class="kop-preview-panel">
@@ -376,7 +446,7 @@
         <div class="field"><label>Tahun Pelajaran</label><input type="text" id="kopSchoolYear" value="2026/2027"></div>
         <div class="field"><label>Kurikulum</label><input type="text" id="kopCurriculum" value="KURIKULUM MERDEKA"></div>
         <div class="field"><label>Kota</label><input type="text" id="kopCity" value="KOTA MEDAN"></div>
-        <div class="field"><label>Mata Pelajaran</label><input type="text" id="kopSubject" value="ILMU PENGETAHUAN ALAM DAN SOSIAL (IPAS)"></div>
+        <div class="field"><label>Mata Pelajaran</label><input type="text" id="kopSubject" value="ILMU PENGETAHUAN ALAM DAN SOSIAL (IPAS)"><small id="kopSubjectNote" style="color:#6b7280;font-size:12px;"></small></div>
         <div class="field"><label>Kelas</label><input type="text" id="kopClassNumber" value="4"></div>
         <div class="field">
           <label>Logo Sekolah</label>
@@ -408,10 +478,10 @@
           </select>
           <label for="kopLogoOffsetX">Geser ↔ (px):</label>
           <input type="number" id="kopLogoOffsetX" value="0" min="-150" max="150" step="1" title="Minus = kiri, plus = kanan">
-          <label for="kopLogoOffsetY">Geser ↕ (px):</label>
+          <label for="kopLogoOffsetY">Geser ↔" (px):</label>
           <input type="number" id="kopLogoOffsetY" value="0" min="-40" max="40" step="1" title="Minus = atas, plus = bawah">
         </div>
-        <h3>Isian Kanan (Nama, Hari, …)</h3>
+        <h3>Isian Kanan (Nama, Hari, ⬦)</h3>
         <div class="kop-info-grid">
           <div class="field"><label>Label 1</label><input type="text" id="kopLabel1" value="Nama"></div>
           <div class="field"><label>Nilai 1</label><input type="text" id="kopValue1" placeholder="Opsional"></div>
@@ -452,6 +522,13 @@
 let questions = JSON.parse(localStorage.getItem('soal_data') || '[]');
 let currentQImage = null;
 let optionImages = {}; // index -> dataURL
+let topiks = [];       // daftar nama pembelajaran (urutan tampil)
+let lastTopik = '';    // pembelajaran terakhir dipakai di form soal
+let prevQuestionId = null;
+let prevListOpen = false;
+
+const TOPIK_NONE = '';
+const NO_TOPIK_LABEL = 'Tanpa Pembelajaran';
 
 const DEFAULT_PRINT_SETTINGS = {
   fontSize: 16,
@@ -460,7 +537,8 @@ const DEFAULT_PRINT_SETTINGS = {
   marginBottom: 1,
   marginLeft: 2,
   marginRight: 2,
-  questionGap: 1
+  questionGap: 1,
+  pgPerRow: 2
 };
 let printSettings = { ...DEFAULT_PRINT_SETTINGS };
 
@@ -473,6 +551,7 @@ const DEFAULT_KOP_SETTINGS = {
   curriculum: 'KURIKULUM MERDEKA',
   city: 'KOTA MEDAN',
   subject: 'ILMU PENGETAHUAN ALAM DAN SOSIAL (IPAS)',
+  subjectAuto: true,
   classNumber: '1',
   logo: '',
   logoWidth: 108,
@@ -528,15 +607,17 @@ function readKopSettingsFromUI() {
     const n = parseFloat(document.getElementById(id)?.value);
     return Number.isFinite(n) ? n : def;
   };
+  const subjectAuto = document.getElementById('kopSubjectAuto')?.checked !== false;
   return {
     enabled: document.getElementById('kopEnabled')?.checked !== false,
+    subjectAuto,
+    subject: subjectAuto ? (getActiveSubjectTopik() || v('kopSubject')) : v('kopSubject'),
     topTitle: v('kopTopTitle'),
     schoolName: v('kopSchoolName'),
     semester: v('kopSemester') || 'GANJIL',
     schoolYear: v('kopSchoolYear'),
     curriculum: v('kopCurriculum'),
     city: v('kopCity'),
-    subject: v('kopSubject'),
     classNumber: v('kopClassNumber'),
     logo: getKopLogoFromUI(),
     logoWidth: Math.max(10, num('kopLogoWidth', 30)),
@@ -565,13 +646,14 @@ function readKopSettingsFromUI() {
 function applyKopSettingsToUI() {
   const k = kopSettings;
   document.getElementById('kopEnabled').checked = k.enabled !== false;
+  document.getElementById('kopSubjectAuto').checked = subjectAutoKop();
   document.getElementById('kopTopTitle').value = k.topTitle;
   document.getElementById('kopSchoolName').value = k.schoolName;
   document.getElementById('kopSemester').value = k.semester || 'GANJIL';
   document.getElementById('kopSchoolYear').value = k.schoolYear;
   document.getElementById('kopCurriculum').value = k.curriculum;
   document.getElementById('kopCity').value = k.city;
-  document.getElementById('kopSubject').value = k.subject;
+  document.getElementById('kopSubject').value = subjectAutoKop() ? (getActiveSubjectTopik() || k.subject || '') : k.subject;
   document.getElementById('kopClassNumber').value = k.classNumber;
   document.getElementById('kopLabel1').value = k.label1;
   document.getElementById('kopValue1').value = k.value1;
@@ -609,6 +691,60 @@ function applyKopSettingsToUI() {
     if (rm) rm.style.display = 'none';
   }
   toggleKopLogoSettings();
+  toggleKopSubjectAuto();
+}
+
+/* ---- Mata Pelajaran kop otomatis mengikuti Pembelajaran aktif ---- */
+function subjectAutoKop() {
+  return kopSettings.subjectAuto !== false;
+}
+
+/** pembelajaran yang sedang aktif: filter > pembelajaran terakhir > daftar pertama */
+function getActiveSubjectTopik() {
+  const tf = getActiveTopikFilter();
+  if (tf !== 'all') return findTopikByKey(tf);
+  if (lastTopik) return lastTopik;
+  const names = getTopikNames();
+  return names[0] || TOPIK_NONE;
+}
+
+function toggleKopSubjectAuto() {
+  const auto = subjectAutoKop();
+  const inp = document.getElementById('kopSubject');
+  if (inp) inp.disabled = auto;
+  const note = document.getElementById('kopSubjectNote');
+  if (note) {
+    note.textContent = auto
+      ? 'Otomatis mengikuti Pembelajaran aktif: ' + (getActiveSubjectTopik() || '(belum ada pembelajaran)') + ' — dicetak KAPITAL'
+      : 'Diisi manual — dicetak KAPITAL.';
+  }
+  updateKopFollowNote();
+}
+
+/** catatan kecil di bar filter */
+function updateKopFollowNote() {
+  const el = document.getElementById('kopFollowNote');
+  if (!el) return;
+  el.textContent = subjectAutoKop()
+    ? '📘 Mata pelajaran kop: ' + (getActiveSubjectTopik() || '(belum ada pembelajaran)')
+    : '📘 Mata pelajaran kop: ' + (kopSettings.subject || '(kosong)') + ' — manual';
+}
+
+/** samakan kop ke pembelajaran aktif; return true kalau berubah */
+function syncKopSubjectToTopik(force) {
+  if (!subjectAutoKop()) return false;
+  const topik = getActiveSubjectTopik();
+  const subj = topik || kopSettings.subject;
+  if (!subj) return false;
+  if (!force && kopSettings.subject === subj) { toggleKopSubjectAuto(); return false; }
+  kopSettings.subject = subj;
+  saveKopSettings();
+  const inp = document.getElementById('kopSubject');
+  if (inp) inp.value = subj;
+  toggleKopSubjectAuto();
+  renderMainKopPreview();
+  if (document.getElementById('kopModalOverlay')?.classList.contains('active')) updateKopPreview();
+  return true;
 }
 
 function toggleKopLogoSettings() {
@@ -659,7 +795,7 @@ function renderKopTitleHtml(k) {
   const year = escapeHtml((k.schoolYear || '').trim() || '2026/2027');
   const curriculum = escapeHtml((k.curriculum || '').trim() || 'KURIKULUM MERDEKA');
   const city = escapeHtml((k.city || '').trim() || 'KOTA MEDAN');
-  const subject = escapeHtml((k.subject || '').trim() || 'MATA PELAJARAN');
+  const subject = escapeHtml(((k.subject || '').trim() || 'MATA PELAJARAN').toUpperCase());
   return `<div class="kop-text">${topTitle}<br>
       SEMESTER ${semester} ${school}<br>
       TAHUN PELAJARAN : ${year}<br>
@@ -915,6 +1051,17 @@ function bindKopModalInputs() {
     el.addEventListener('change', updateKopPreview);
   });
   document.getElementById('kopEnabled')?.addEventListener('change', updateKopPreview);
+  document.getElementById('kopSubjectAuto')?.addEventListener('change', e => {
+    kopSettings.subjectAuto = e.target.checked !== false;
+    if (subjectAutoKop()) {
+      syncKopSubjectToTopik(true);
+    } else {
+      saveKopSettings();
+      toggleKopSubjectAuto();
+      updateKopPreview();
+      renderMainKopPreview();
+    }
+  });
   document.getElementById('kopLogoFile')?.addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -959,6 +1106,7 @@ function applyPrintSettingsToUI() {
   document.getElementById('printMarginLeft').value = s.marginLeft;
   document.getElementById('printMarginRight').value = s.marginRight;
   document.getElementById('printQuestionGap').value = s.questionGap;
+  document.getElementById('printPgPerRow').value = s.pgPerRow === 1 ? '1' : '2';
 }
 
 function readPrintSettingsFromUI() {
@@ -973,13 +1121,19 @@ function readPrintSettingsFromUI() {
     marginBottom: Math.max(0, num('printMarginBottom', 6)),
     marginLeft: Math.max(0, num('printMarginLeft', 6)),
     marginRight: Math.max(0, num('printMarginRight', 6)),
-    questionGap: Math.max(0, num('printQuestionGap', 1))
+    questionGap: Math.max(0, num('printQuestionGap', 1)),
+    pgPerRow: document.getElementById('printPgPerRow')?.value === '1' ? 1 : 2
   };
+}
+
+/** 1 = semua pilihan dalam 1 baris, 2 = 2 baris (A|B / C|D) */
+function getPgPrintPerRow() {
+  return Number(printSettings.pgPerRow) === 1 ? 1 : 2;
 }
 
 function bindPrintSettingsInputs() {
   const ids = ['printFontSize','printPaper','printMarginTop','printMarginBottom',
-    'printMarginLeft','printMarginRight','printQuestionGap'];
+    'printMarginLeft','printMarginRight','printQuestionGap','printPgPerRow'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener('change', () => {
@@ -1040,10 +1194,13 @@ function resetApp() {
     localStorage.removeItem('soal_data');
     localStorage.removeItem('soal_print_settings');
     localStorage.removeItem('soal_kop_settings');
+    localStorage.removeItem('soal_topiks');
   } catch (e) {
     // ignore
   }
   questions = [];
+  topiks = [];
+  lastTopik = '';
   printSettings = { ...DEFAULT_PRINT_SETTINGS };
   kopSettings = { ...DEFAULT_KOP_SETTINGS };
   applyPrintSettingsToUI();
@@ -1054,6 +1211,185 @@ function resetApp() {
 
 const typeLabel = { pg:'Pilihan Ganda', isian:'Isian', esai:'Esai' };
 const badgeClass = { pg:'badge-pg', isian:'badge-isian', esai:'badge-esai' };
+const TYPE_ORDER = ['pg', 'isian', 'esai'];
+const TYPE_LETTER = { pg:'A', isian:'B', esai:'C' };
+
+/* ---------------- Pembelajaran (kelompok soal) ---------------- */
+function normalizeTopik(v){ return (v || '').trim(); }
+function topikKey(v){ return normalizeTopik(v).toLowerCase(); }
+
+function loadTopiks() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('soal_topiks') || '[]');
+    if (Array.isArray(saved)) topiks = saved.map(normalizeTopik).filter(Boolean);
+  } catch (e) { topiks = []; }
+  syncTopiksFromData();
+}
+
+function saveTopiks() {
+  try { localStorage.setItem('soal_topiks', JSON.stringify(topiks)); } catch (e) { /* ignore */ }
+}
+
+/** daftarkan pembelajaran yang dipakai soal tapi belum ada di daftar */
+function syncTopiksFromData() {
+  let changed = false;
+  questions.forEach(q => {
+    const t = normalizeTopik(q.topik);
+    if (!t) return;
+    if (!topiks.some(x => topikKey(x) === topikKey(t))) { topiks.push(t); changed = true; }
+  });
+  if (changed) saveTopiks();
+}
+
+function registerTopik(name) {
+  const t = normalizeTopik(name);
+  if (!t) return false;
+  syncTopiksFromData();
+  if (topiks.some(x => topikKey(x) === topikKey(t))) return false;
+  topiks.push(t);
+  saveTopiks();
+  return true;
+}
+
+function getTopikNames() {
+  syncTopiksFromData();
+  return topiks.slice();
+}
+
+function findTopikByKey(key) {
+  const k = String(key || '');
+  if (k === '__none__') return TOPIK_NONE;
+  return topiks.find(x => topikKey(x) === k.toLowerCase()) || TOPIK_NONE;
+}
+
+function getActiveTopikFilter() {
+  const sel = document.getElementById('filterTopik');
+  return sel ? sel.value : 'all';
+}
+
+function getActiveTypeFilter() {
+  const sel = document.getElementById('filterType');
+  return sel ? sel.value : 'all';
+}
+
+function getSearchQuery() {
+  const el = document.getElementById('searchBox');
+  return el ? el.value.trim().toLowerCase() : '';
+}
+
+/** daftar soal sesuai filter aktif (tipe + pembelajaran + pencarian) */
+function getFilteredQuestions() {
+  const typeFilter = getActiveTypeFilter();
+  const topikFilter = getActiveTopikFilter();
+  const search = getSearchQuery();
+  return questions.filter(q => {
+    if (typeFilter !== 'all' && q.type !== typeFilter) return false;
+    if (topikFilter === '__none__') { if (normalizeTopik(q.topik)) return false; }
+    else if (topikFilter !== 'all' && topikKey(q.topik) !== topikFilter) return false;
+    if (search && !(q.text || '').toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+function renderTopikFilterOptions() {
+  const sel = document.getElementById('filterTopik');
+  if (!sel) return;
+  const prev = sel.value || 'all';
+  const counts = new Map();
+  questions.forEach(q => {
+    const k = topikKey(q.topik) || '__none__';
+    counts.set(k, (counts.get(k) || 0) + 1);
+  });
+  const names = getTopikNames();
+  let html = `<option value="all">Semua Pembelajaran (${questions.length})</option>`;
+  names.forEach(n => {
+    const c = counts.get(topikKey(n)) || 0;
+    html += `<option value="${escapeAttr(topikKey(n))}">${escapeHtml(n)} (${c})</option>`;
+  });
+  if (counts.has('__none__')) {
+    html += `<option value="__none__">${NO_TOPIK_LABEL} (${counts.get('__none__')})</option>`;
+  }
+  sel.innerHTML = html;
+  sel.value = [...sel.options].some(o => o.value === prev) ? prev : 'all';
+}
+
+function renderTopikDatalist() {
+  const dl = document.getElementById('topikOptions');
+  if (!dl) return;
+  dl.innerHTML = getTopikNames()
+    .map(n => `<option value="${escapeAttr(n)}"></option>`)
+    .join('');
+}
+
+function addTopikPrompt() {
+  const name = prompt('Nama pembelajaran / judul soal baru:\n\nmis. Agama, Bahasa Indonesia, Matematika');
+  if (name === null) return;
+  const t = normalizeTopik(name);
+  if (!t) { alert('Nama pembelajaran tidak boleh kosong.'); return; }
+  const isNew = registerTopik(t);
+  renderTopikFilterOptions();
+  const sel = document.getElementById('filterTopik');
+  if (sel) sel.value = topikKey(t);
+  render();
+  alert((isNew ? 'Pembelajaran "' + t + '" ditambahkan.' : '"' + t + '" sudah ada.')
+    + '\n\nMata pelajaran pada kop soal ikut diganti.');
+}
+
+function addTopikFromForm() {
+  const input = document.getElementById('topikInput');
+  if (!input) return;
+  const t = normalizeTopik(input.value);
+  if (!t) { alert('Isi dulu nama pembelajarannya.'); return; }
+  registerTopik(t);
+  renderTopikDatalist();
+  alert('Pembelajaran "' + t + '" siap dipakai.');
+}
+
+function getFilterSummary() {
+  const parts = [];
+  const tf = getActiveTypeFilter();
+  if (tf !== 'all') parts.push('Tipe: ' + typeLabel[tf]);
+  const topf = getActiveTopikFilter();
+  if (topf !== 'all') parts.push('Pembelajaran: ' + (findTopikByKey(topf) || NO_TOPIK_LABEL));
+  const s = getSearchQuery();
+  if (s) parts.push('Cari: "' + s + '"');
+  return parts.join(' • ');
+}
+
+/** Section soal: dikelompokkan per pembelajaran lalu per tipe, nomor per tipe berlanjut */
+function buildSections(list, typeFilter) {
+  const groups = new Map();
+  list.forEach(q => {
+    const k = topikKey(q.topik);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(q);
+  });
+  const ordered = getTopikNames()
+    .map(n => topikKey(n))
+    .filter(k => groups.has(k));
+  groups.forEach((_, k) => { if (!ordered.includes(k)) ordered.push(k); });
+
+  const multi = ordered.length > 1;
+  const counters = { pg: 0, isian: 0, esai: 0 };
+  const sections = [];
+
+  ordered.forEach(k => {
+    const g = groups.get(k);
+    const gName = k ? findTopikByKey(k) : NO_TOPIK_LABEL;
+    TYPE_ORDER.forEach(t => {
+      const qs = g.filter(q => q.type === t);
+      if (!qs.length) return;
+      let title = null;
+      if (typeFilter === 'all') {
+        title = multi
+          ? `${gName.toUpperCase()} — ${TYPE_LETTER[t]}. ${typeLabel[t]}`
+          : `${TYPE_LETTER[t]}. ${typeLabel[t]}`;
+      }
+      sections.push({ title, items: qs.map(q => ({ q, num: ++counters[t] })) });
+    });
+  });
+  return sections;
+}
 const PG_FORMAT_GRID = 'grid-acbd';
 const PG_FORMAT_VERTICAL = 'vertical';
 const pgFormatLabel = {
@@ -1081,6 +1417,10 @@ function openModal(type, editId=null) {
   document.getElementById('questionText').value = '';
   document.getElementById('isianAnswer').value = '';
   document.getElementById('esaiAnswer').value = '';
+  renderTopikDatalist();
+  const topFilter = getActiveTopikFilter();
+  const defaultTopik = topFilter === 'all' ? lastTopik : findTopikByKey(topFilter);
+  document.getElementById('topikInput').value = defaultTopik || '';
   resetQImageFields();
   document.getElementById('optionsContainer').innerHTML = '';
 
@@ -1090,6 +1430,8 @@ function openModal(type, editId=null) {
   document.getElementById('esaiSection').style.display = type==='esai' ? 'block' : 'none';
 
   document.getElementById('modalTitle').textContent = (editId?'Edit ':'Tambah ') + typeLabel[type];
+  hideAddAgainBar();
+  renderPrevQuestions();
 
   if (type==='pg') {
     setPgFormatRadio(PG_FORMAT_GRID);
@@ -1099,6 +1441,7 @@ function openModal(type, editId=null) {
   if (editId) {
     const q = questions.find(x=>x.id===editId);
     document.getElementById('questionText').value = q.text;
+    document.getElementById('topikInput').value = normalizeTopik(q.topik);
     if (q.image) {
       currentQImage = q.image;
       document.getElementById('qImageWidth').value = normalizeImageWidth(q.imageWidth);
@@ -1122,6 +1465,94 @@ function openModal(type, editId=null) {
 function closeModal() {
   document.getElementById('modalOverlay').classList.add('active') && void 0;
   document.getElementById('modalOverlay').classList.remove('active');
+  hideAddAgainBar();
+}
+
+function showAddAgainBar() {
+  const bar = document.getElementById('addAgainBar');
+  if (bar) bar.style.display = 'block';
+}
+
+function hideAddAgainBar() {
+  const bar = document.getElementById('addAgainBar');
+  if (bar) bar.style.display = 'none';
+}
+
+function answerAddAgain(choice) {
+  if (choice === 'no') { closeModal(); return; }
+  openModal(choice);
+}
+
+function editPrevQuestion() {
+  const q = questions.find(x => x.id === prevQuestionId);
+  if (!q) { alert('Soal sebelumnya tidak ditemukan.'); return; }
+  openModal(q.type, q.id);
+}
+
+function togglePrevList() {
+  prevListOpen = !prevListOpen;
+  const list = document.getElementById('prevList');
+  if (list) list.style.display = prevListOpen ? 'block' : 'none';
+}
+
+function truncateText(t, max) {
+  const s = (t || '').replace(/\s+/g, ' ').trim();
+  return s.length > max ? s.slice(0, max) + '…' : s;
+}
+
+function renderPrevQuestionBody(q) {
+  if (q.type === 'pg') return renderPGOptionsBody(q, true);
+  if (q.type === 'isian') return `<div class="answer-box"><strong>Kunci:</strong> ${escapeHtml(q.answer || '-')}</div>`;
+  return q.answer
+    ? `<div class="answer-box"><strong>Pedoman:</strong> ${escapeHtml(q.answer)}</div>`
+    : '<em style="color:#9ca3af;">Tanpa pedoman jawaban</em>';
+}
+
+function renderPrevQuestions() {
+  const box = document.getElementById('prevBox');
+  if (!box) return;
+  const countEl = document.getElementById('prevCount');
+  if (countEl) countEl.textContent = questions.length;
+  if (!questions.length) {
+    prevQuestionId = null;
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+
+  const last = questions[questions.length - 1];
+  if (last) {
+    prevQuestionId = last.id;
+    const no = questions.indexOf(last) + 1;
+    const noEl = document.getElementById('prevNo');
+    if (noEl) noEl.textContent = no;
+    const body = document.getElementById('prevBody');
+    if (body) {
+      body.innerHTML = `<div style="margin-bottom:6px;">
+          <span class="badge ${badgeClass[last.type]}">${typeLabel[last.type]}</span>
+          ${normalizeTopik(last.topik) ? `<span class="badge badge-topik">📚 ${escapeHtml(normalizeTopik(last.topik))}</span>` : ''}
+          ${renderQuestionHeaderForCard(last)}
+        </div>${renderPrevQuestionBody(last)}`;
+    }
+  }
+
+  const list = document.getElementById('prevList');
+  if (list) {
+    list.innerHTML = questions.map((q, i) => {
+      const snippet = (q.text || '').trim() ? truncateText(q.text, 90) : '📷 Soal bergambar';
+      let info = '';
+      if (q.type === 'pg') info = 'Kunci: ' + String.fromCharCode(65 + (q.correct || 0));
+      else if (q.type === 'isian') info = 'Kunci: ' + truncateText(q.answer || '-', 40);
+      else info = 'Esai';
+      return `<div class="prev-list-row ${q.id === prevQuestionId ? 'is-active' : ''}">
+        <span class="prev-list-num">${i + 1}.</span>
+        <span class="badge ${badgeClass[q.type]}">${typeLabel[q.type]}</span>
+        <span class="prev-list-txt">${escapeHtml(snippet)} <em>— ${escapeHtml(info)}</em></span>
+        <button type="button" class="btn btn-gray btn-sm" onclick="openModal('${q.type}','${q.id}')">✏️</button>
+      </div>`;
+    }).join('');
+    list.style.display = prevListOpen ? 'block' : 'none';
+  }
 }
 
 function getQImagePosition() {
@@ -1426,6 +1857,20 @@ function saveQuestion(){
   if(!text && !currentQImage){ alert('Isi pertanyaan atau tambahkan gambar pertanyaan!'); return; }
 
   let q = { id: editId || ('q'+Date.now()), type, text, image: currentQImage };
+  const topik = normalizeTopik(document.getElementById('topikInput').value);
+  q.topik = topik;
+  if (topik) {
+    registerTopik(topik);
+    lastTopik = topik;
+    // ikut pindah ke pembelajaran tsb agar daftar & kop konsisten
+    const fSel = document.getElementById('filterTopik');
+    if (fSel && fSel.value !== 'all' && topikKey(topik) !== fSel.value) {
+      registerTopik(topik);
+      renderTopikFilterOptions();
+      fSel.value = topikKey(topik);
+    }
+    syncKopSubjectToTopik();
+  }
   if (currentQImage) Object.assign(q, readQImageMetaFromForm());
 
   if(type==='pg'){
@@ -1457,10 +1902,17 @@ function saveQuestion(){
   if(editId){
     const i = questions.findIndex(x=>x.id===editId);
     questions[i] = q;
-  } else {
-    questions.push(q);
+    save(); render(); closeModal();
+    return;
   }
-  save(); render(); closeModal();
+  questions.push(q);
+  save(); render();
+
+  // tetap di modal supaya bisa langsung menambah soal berikutnya
+  openModal(type);
+  showAddAgainBar();
+  const bar = document.getElementById('addAgainBar');
+  if (bar) bar.scrollIntoView({ block:'nearest' });
 }
 
 function deleteQuestion(id){
@@ -1470,25 +1922,201 @@ function deleteQuestion(id){
   }
 }
 
+
+/* ---------------- Isi data dummy (untuk uji coba) ---------------- */
+const DUMMY_TOPICS = ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Agama', 'Pendidikan Pancasila'];
+const DUMMY_POOL = {
+  Matematika: {
+    pg: [
+      ['Hasil dari 125 + 375 - 200 adalah ...', ['400', '500', '450', '600']],
+      ['Luas segitiga dengan alas 8 cm dan tinggi 6 cm adalah ... cm²', ['24', '48', '28', '14']],
+      ['Nilai rata-rata dari 70, 80, 90 adalah ...', ['80', '76', '85', '240']],
+      ['Nilai dari 3² adalah ...', ['9', '6', '27', '8']],
+      ['Keliling persegi dengan panjang 9 cm adalah ... cm', ['18', '36', '81', '24']]
+    ],
+    isian: [
+      ['Bilangan prima terkecil adalah ...', '2'],
+      ['1 km = ... meter', '1000'],
+      ['Nama bangun datar yang memiliki 3 sudut adalah ...', 'segitiga'],
+      ['60 : 12 = ...', '5']
+    ],
+    esai: [
+      ['Jelaskan langkah-langkah menghitung luas persegi panjang!', 'Sebutkan panjang dan lebar, lalu luas = panjang × lebar.'],
+      ['Mengapa kita perlu belajar matematika di sekolah?', 'Untuk berpikir logis, teliti, dan memecahkan masalah sehari-hari.']
+    ]
+  },
+  'Bahasa Indonesia': {
+    pg: [
+      ['Gagasan utama dalam sebuah paragraf disebut ...', ['ide pokok', 'kesimpulan', 'argumen', 'simpulan']],
+      ['Kata baku dari "praktek" adalah ...', ['praktik', 'practik', 'prakteek', 'praktek']],
+      ['Teks yang menjelaskan suatu peristiwa disebut ...', ['eksplanasi', 'hikayat', 'dialog', 'pantun']],
+      ['Antonim dari kata "tinggi" adalah ...', ['rendah', 'jauh', 'besar', 'lebar']]
+    ],
+    isian: [
+      ['Lawan kata "panjang" adalah ...', 'pendek'],
+      ['Bagian atas surat resmi disebut ...', 'kop'],
+      ['Kata yang digunakan untuk meminta sesuatu dengan sopan adalah "..."', 'silakan']
+    ],
+    esai: [
+      ['Tuliskan satu paragraf deskripsi tentang lingkungan sekolahmu!', 'Ciri-ciri lingkungan sekolah yang baik, ditulis dengan jelas.'],
+      ['Buatlah satu contoh teks/anaconda!', 'Sesuaikan isi dan situation dengan jenis teks yang diminta.']
+    ]
+  },
+  IPAS: {
+    pg: [
+      ['Planet terdekat dengan Bumi adalah ...', ['Merkurius', 'Venus', 'Mars', 'Jupiter']],
+      ['Gas penyumbang terbesar efek rumah kaca adalah ...', ['karbon dioksida', 'oksigen', 'nitrogen', 'hidrogen']],
+      ['Bagian tumbuhan yang menyerap air dari tanah adalah ...', ['akar', 'batang', 'daun', 'bunga']],
+      ['Benda yang dapat menghantarkan listrik adalah ...', ['logam', 'kayu', 'plastik', 'kaca']],
+      ['Tahap siklus air berupa naiknya uap air ke udara disebut ...', ['penguapan', 'pencairan', 'pengembunan', 'curah hujan']]
+    ],
+    isian: [
+      ['Uap air yang menjadi titik-titik air di udara disebut ...', 'awan'],
+      ['Pembangkit listrik yang memanfaatkan aliran air disebut ...', 'PLTA']
+    ],
+    esai: [
+      ['Jelaskan proses terciptanya hujan!', 'Air menguap, uap air naik lalu mengembun menjadi awan, kemudian turun sebagai hujan.'],
+      ['Sebutkan tiga sumber energi yang dapat diperbarui!', 'Matahari, angin, dan air.']
+    ]
+  },
+  Agama: {
+    pg: [
+      ['Surah yang pertama diturunkan adalah Surah ...', ['Al-Fatihah', 'Al-Baqarah', 'An-Nas', 'Al-Ikhlas']],
+      ['Salat wajib yang terdiri atas dua rakaat adalah ...', ['Subuh', 'Dzuhur', 'Asar', 'Maghrib']],
+      ['Surah yang berisi lima ayat dan sering dibaca setelah salat adalah ...', ['Al-Ikhlas', 'Al-Fatihah', 'Al-Asr', 'An-Nas']],
+      ['Sifat Allah yang Maha Besar disebut ...', ['Muwahid', 'Khalik', 'Baqi', 'Quddus']]
+    ],
+    isian: [
+      ['Kitaballah yang diturunkan kepada Nabi Muhammad adalah ...', 'Al-Qur\'an'],
+      ['Nama bulan yang kedelapan dalam kalender Hijriah adalah ...', 'Syawal']
+    ],
+    esai: [
+      ['Jelaskan rukun iman yang ada dalam Islam!', 'Rukun iman ada enam, sebutkan satu per satu.'],
+      ['Jelaskan manfaat toleransi dalam kehidupan sehari-hari!', 'Saling menghormati perbedaan dan hidup rukun.']
+    ]
+  },
+  'Pendidikan Pancasila': {
+    pg: [
+      ['Sila kelima Pancasila berbunyi ...', ['Keadilan sosial bagi seluruh rakyat Indonesia', 'Kemanusiaan yang adil dan beradab', 'Persatuan Indonesia', 'Keadilan dan ketertiban']],
+      ['Lembaga negara yang berwenang menguji undang-undang terhadap UUD adalah ...', ['Mahkamah Konstitusi', 'Mahkamah Agung', 'DPR', 'Gugus Depan']],
+      ['Bentuk negara Indonesia adalah ...', ['Negara kesatuan', 'Negara federal', 'Negara dominion', 'Negara serikat']],
+      ['Nilai sila kelima dalam kehidupan sehari-hari terlihat pada ...', ['gotong royong', 'perselisihan', 'diskriminasi', 'perjudilan sepihak']]
+    ],
+    isian: [
+      ['Sistem pemerintahan Indonesia adalah ...', 'republik'],
+      ['Lembaga legislatif di Indonesia disebut ...', 'DPR']
+    ],
+    esai: [
+      ['Jelaskan nilai toleransi dalam kehidupan bermasyarakat!', 'Saling menghormati perbedaan, musyawarah, dan menaati kesepakatan.'],
+      ['Ceritakan manfaat musyawarah dalam kelas!', 'Menghindari perbedaan paham dan menghasilkan keputusan yang disepakati.']
+    ]
+  }
+};
+
+let dummySeq = 0;
+function dummyId() {
+  dummySeq += 1;
+  return 'dummy_' + Date.now().toString(36) + '_' + dummySeq;
+}
+
+/** Bangun satu soal dummy dari tipe + indeks; null bila tidak ada data. */
+function buildDummyQuestion(topik, type, i) {
+  const pool = DUMMY_POOL[topik] && DUMMY_POOL[topik][type];
+  if (!pool || !pool.length) return null;
+  const item = pool[i % pool.length];
+  const q = { id: dummyId(), type: type, text: '[DUMMY ' + topik + '] ' + item[0], image: null, topik: topik };
+if (type === 'pg') {
+    q.options = item[1].map(function (t) { return { text: t }; });
+    q.correct = i % q.options.length;
+  } else {
+    q.answer = item[1];
+  }
+  return q;
+}
+
+/** Isi bank soal dengan data contoh. replace = true berarti ganti soal yang ada. */
+function fillDummyWith(countPerTopic, replace) {
+  const created = [];
+  let pgCount = 0;
+  DUMMY_TOPICS.forEach(function (topik) {
+    ['pg', 'isian', 'esai'].forEach(function (type) {
+      for (let i = 0; i < countPerTopic; i++) {
+        const q = buildDummyQuestion(topik, type, i);
+        if (!q) continue;
+        if (type === 'pg') {
+          q.pgFormat = pgCount % 3 === 2 ? PG_FORMAT_VERTICAL : PG_FORMAT_GRID;
+          pgCount += 1;
+        }
+        created.push(q);
+      }
+    });
+  });
+  if (!created.length) return 0;
+  questions = replace ? created : questions.concat(created);
+  created.forEach(function (q) { registerTopik(q.topik); });
+  lastTopik = created[created.length - 1].topik;
+  syncTopiksFromData();
+  syncKopSubjectToTopik(true);
+  save();
+  render();
+  return created.length;
+}
+
+function fillDummy() {
+  if (questions.length && !confirm(
+    'Bank soal saat ini berisi ' + questions.length + ' soal.\n\n' +
+    'Lanjutkan? Soal dummy akan DITAMBAHKAN setelah soal yang ada.'
+  )) return;
+
+  const mode = prompt(
+    'Jumlah soal dummy per kelompok:\n' +
+    '1 = 1 per jenis (PG/Isian/Esai) per kelompok - 15 soal\n' +
+    '2 = 2 per jenis per kelompok - 30 soal\n' +
+    '3 = 3 per jenis per kelompok - 45 soal\n\n' +
+    'Masukkan angka (1-3):',
+    '2'
+  );
+  if (mode === null) return;
+  const n = Math.min(3, Math.max(1, parseInt(mode, 10) || 2));
+
+  const rep = prompt(
+    'Hapus soal yang ada lebih dulu?\n' +
+    '1 = ya, ganti dengan dummy\n' +
+    '2 = tidak, tambahkan saja\n\n' +
+    'Masukkan angka (1-2):',
+    '2'
+  );
+  if (rep === null) return;
+  const replace = parseInt(rep, 10) === 1;
+
+  const total = fillDummyWith(n, replace);
+  alert('✅ ' + total + ' soal dummy ditambahkan.\n\n' +
+    'Setiap teks soal berawalan [DUMMY ...] supaya mudah dikenali lalu dihapus.\n' +
+    'Coba: filter Pembelajaran, Cetak/Preview, Kunci Jawaban, Export PDF/Word.');
+}
+
 function render(){
   const list = document.getElementById('questionList');
-  const filter = document.getElementById('filterType').value;
-  const search = document.getElementById('searchBox').value.toLowerCase();
+  const filter = getActiveTypeFilter();
+  const search = getSearchQuery();
+
+  renderTopikFilterOptions();
+  syncKopSubjectToTopik();
 
   // stats
   document.getElementById('statTotal').textContent = questions.length;
   document.getElementById('statPG').textContent = questions.filter(q=>q.type==='pg').length;
   document.getElementById('statIsian').textContent = questions.filter(q=>q.type==='isian').length;
   document.getElementById('statEsai').textContent = questions.filter(q=>q.type==='esai').length;
+  renderPrevQuestions();
 
-  let filtered = questions.filter(q=>{
-    if(filter!=='all' && q.type!==filter) return false;
-    if(search && !q.text.toLowerCase().includes(search)) return false;
-    return true;
-  });
+  const filtered = getFilteredQuestions();
 
   if(filtered.length===0){
-    list.innerHTML = `<div class="card empty-state">📭 Belum ada soal. Klik tombol di atas untuk menambah soal.</div>`;
+    const adaSoal = questions.length > 0;
+    list.innerHTML = `<div class="card empty-state">${adaSoal
+      ? '🔍 Tidak ada soal yang cocok dengan filter/pencarian.'
+      : '📭 Belum ada soal. Klik tombol di atas untuk menambah soal.'}</div>`;
     return;
   }
 
@@ -1507,6 +2135,7 @@ function render(){
         <div>
           <span class="badge ${badgeClass[q.type]}">${typeLabel[q.type]}</span>
           ${q.type==='pg' ? `<span class="badge badge-gray" style="background:#6b7280;margin-left:4px;">${pgFormatLabel[getPgFormat(q)]}</span>` : ''}
+          ${normalizeTopik(q.topik) ? `<span class="badge badge-topik">📚 ${escapeHtml(normalizeTopik(q.topik))}</span>` : ''}
           <span style="color:#9ca3af; font-size:13px;"> #${num}</span>
         </div>
         <div class="q-actions">
@@ -1518,27 +2147,11 @@ function render(){
     </div>`;
   }
 
-  if(filter==='all'){
-    const pgList = questions.filter(q=>q.type==='pg');
-    const isianList = questions.filter(q=>q.type==='isian');
-    const esaiList = questions.filter(q=>q.type==='esai');
-    const parts = [];
-    if(pgList.length){
-      parts.push('<div class="section-title-ui">A. Pilihan Ganda</div>');
-      pgList.forEach((q,i)=> parts.push(renderQuestionCard(q, i+1)));
-    }
-    if(isianList.length){
-      parts.push('<div class="section-title-ui">B. Isian</div>');
-      isianList.forEach((q,i)=> parts.push(renderQuestionCard(q, i+1)));
-    }
-    if(esaiList.length){
-      parts.push('<div class="section-title-ui">C. Esai</div>');
-      esaiList.forEach((q,i)=> parts.push(renderQuestionCard(q, i+1)));
-    }
-    list.innerHTML = parts.join('');
-  } else {
-    list.innerHTML = filtered.map((q,i)=> renderQuestionCard(q, i+1)).join('');
-  }
+  const sections = buildSections(filtered, filter);
+  list.innerHTML = sections.map(sec => {
+    const head = sec.title ? `<div class="section-title-ui">${escapeHtml(sec.title)}</div>` : '';
+    return head + sec.items.map(it => renderQuestionCard(it.q, it.num)).join('');
+  }).join('');
 }
 
 function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -1612,6 +2225,9 @@ ${kopCss}
 .opt-grid-print td{width:50%;vertical-align:top;padding:0.1em 0.5em 0.15em 0.25em;overflow:hidden;
   word-wrap:break-word;word-break:break-all;overflow-wrap:anywhere;line-height:1.35;}
 .opt-grid-print td.og-cell-r{padding-left:0.85em;}
+.opt-grid-print-row{table-layout:auto;}
+.opt-grid-print-row td.og-cell-multi{width:auto;padding:0.1em 0.7em 0.15em 0.25em;}
+.opt-grid-print-row td.og-cell-multi:last-child{padding-right:0;}
 .opt-l{margin:0 0 0.05em 0;}
 .opt-t{margin:0 0 0.1em 0;text-align:justify;}
 .q-text-row{margin:0 0 0.2em 0;}
@@ -1663,7 +2279,7 @@ function renderPGOptionEntry(o, oi, correct, highlight) {
 
 function renderPrintQuestion(q, num) {
   let extra = '';
-  if (q.type === 'pg') extra = renderPGOptionsBody(q, false);
+  if (q.type === 'pg') extra = renderPGOptionsBodyPrint(q);
   else if (q.type === 'isian') {
     extra = buildQuestionSpacerRow(num, `<div class="opt-answer">Jawaban:<span class="opt-dots"></span></div>`, 'q-answer-row');
   } else {
@@ -1674,22 +2290,12 @@ function renderPrintQuestion(q, num) {
 
 function collectPrintBlockItems() {
   const items = [];
-  const pg = questions.filter(q => q.type === 'pg');
-  const isian = questions.filter(q => q.type === 'isian');
-  const esai = questions.filter(q => q.type === 'esai');
+  const sections = buildSections(getFilteredQuestions(), getActiveTypeFilter());
 
-  if (pg.length) {
-    items.push('<div class="section-title"><b>A. Pilihan Ganda</b></div>');
-    pg.forEach((q, i) => items.push(renderPrintQuestion(q, i + 1)));
-  }
-  if (isian.length) {
-    items.push('<div class="section-title"><b>B. Isian</b></div>');
-    isian.forEach((q, i) => items.push(renderPrintQuestion(q, i + 1)));
-  }
-  if (esai.length) {
-    items.push('<div class="section-title"><b>C. Esai</b></div>');
-    esai.forEach((q, i) => items.push(renderPrintQuestion(q, i + 1)));
-  }
+  sections.forEach(sec => {
+    if (sec.title) items.push(`<div class="section-title"><b>${escapeHtml(sec.title)}</b></div>`);
+    sec.items.forEach(it => items.push(renderPrintQuestion(it.q, it.num)));
+  });
   return items;
 }
 
@@ -1802,22 +2408,12 @@ function renderAnswerKeyQuestion(q, num) {
 
 function collectAnswerKeyItems() {
   const items = [];
-  const pg = questions.filter(q => q.type === 'pg');
-  const isian = questions.filter(q => q.type === 'isian');
-  const esai = questions.filter(q => q.type === 'esai');
+  const sections = buildSections(getFilteredQuestions(), getActiveTypeFilter());
 
-  if (pg.length) {
-    items.push('<div class="section-title"><b>A. Pilihan Ganda</b></div>');
-    pg.forEach((q, i) => items.push(renderAnswerKeyQuestion(q, i + 1)));
-  }
-  if (isian.length) {
-    items.push('<div class="section-title"><b>B. Isian</b></div>');
-    isian.forEach((q, i) => items.push(renderAnswerKeyQuestion(q, i + 1)));
-  }
-  if (esai.length) {
-    items.push('<div class="section-title"><b>C. Esai</b></div>');
-    esai.forEach((q, i) => items.push(renderAnswerKeyQuestion(q, i + 1)));
-  }
+  sections.forEach(sec => {
+    if (sec.title) items.push(`<div class="section-title"><b>${escapeHtml(sec.title)}</b></div>`);
+    sec.items.forEach(it => items.push(renderAnswerKeyQuestion(it.q, it.num)));
+  });
   return items;
 }
 
@@ -1848,32 +2444,49 @@ function renderPGOptionsVertical(q, highlight) {
   return `<div class="opt-list-vertical">${html}</div>`;
 }
 
+/** Grid pilihan: cols kolom per baris (mis. 2 kolom -> A|B / C|D, 1 baris -> A|B|C|D) */
+function renderPGOptionsColumns(q, highlight, cols) {
+  const opts = q.options || [];
+  if (!opts.length) return '';
+  const nCols = Math.max(1, Math.min(cols, opts.length));
+  const perCol = Math.ceil(opts.length / nCols);
+  const buckets = [];
+  for (let c = 0; c < nCols; c++) buckets.push(opts.slice(c * perCol, (c + 1) * perCol));
+  const maxRows = Math.max(...buckets.map(b => b.length));
+  let rows = '';
+  for (let r = 0; r < maxRows; r++) {
+    rows += '<tr>';
+    for (let c = 0; c < nCols; c++) {
+      const oi = c * perCol + r;
+      const o = buckets[c][r];
+      if (highlight) {
+        rows += `<td>${o ? renderPGOptionEntry(o, oi, q.correct, true) : ''}</td>`;
+      } else {
+        const cls = nCols > 2 ? 'og-cell-multi' : `og-cell${c === nCols - 1 ? ' og-cell-r' : ''}`;
+        rows += `<td class="${cls}">${o ? renderPGOptionCell(o, oi) : ''}</td>`;
+      }
+    }
+    rows += '</tr>';
+  }
+  const cls = highlight ? 'opt-grid' : (nCols > 2 ? 'opt-grid-print opt-grid-print-row' : 'opt-grid-print');
+  return `<table class="${cls}" cellpadding="0" cellspacing="0"><tbody>${rows}</tbody></table>`;
+}
+
 /** Grid: baris1 A|C, baris2 B|D — atau vertikal jika pgFormat = vertical */
 function renderPGOptionsBody(q, highlight) {
   if (getPgFormat(q) === PG_FORMAT_VERTICAL) {
     return renderPGOptionsVertical(q, highlight);
   }
-  const opts = q.options;
-  const split = Math.ceil(opts.length / 2);
-  const left = opts.slice(0, split);
-  const right = opts.slice(split);
-  const maxRows = Math.max(left.length, right.length);
-  let rows = '';
-  for (let r = 0; r < maxRows; r++) {
-    const oiL = r;
-    const oiR = split + r;
-    rows += '<tr>';
-    if (!highlight) {
-      rows += `<td class="og-cell">${left[r] ? renderPGOptionCell(left[r], oiL) : ''}</td>`;
-      rows += `<td class="og-cell og-cell-r">${right[r] ? renderPGOptionCell(right[r], oiR) : ''}</td>`;
-    } else {
-      rows += `<td>${left[r] ? renderPGOptionEntry(left[r], oiL, q.correct, true) : ''}</td>`;
-      rows += `<td>${right[r] ? renderPGOptionEntry(right[r], oiR, q.correct, true) : ''}</td>`;
-    }
-    rows += '</tr>';
+  return renderPGOptionsColumns(q, highlight, 2);
+}
+
+/** Versi cetak: ikut pengaturan "Pilihan jawaban" (1 baris / 2 baris) di toolbar */
+function renderPGOptionsBodyPrint(q) {
+  if (getPgFormat(q) === PG_FORMAT_VERTICAL) {
+    return renderPGOptionsVertical(q, false);
   }
-  const cls = highlight ? 'opt-grid' : 'opt-grid-print';
-  return `<table class="${cls}" cellpadding="0" cellspacing="0"><tbody>${rows}</tbody></table>`;
+  const perRow = getPgPrintPerRow();
+  return renderPGOptionsColumns(q, false, perRow === 1 ? (q.options || []).length || 1 : 2);
 }
 
 function exportData(){
@@ -1905,6 +2518,20 @@ function ensureExportReady() {
   if (!questions.length) {
     alert('Belum ada soal untuk diekspor!');
     return false;
+  }
+  const filtered = getFilteredQuestions();
+  if (!filtered.length) {
+    alert('Tidak ada soal yang cocok dengan filter aktif!');
+    return false;
+  }
+  const summary = getFilterSummary();
+  if (summary) {
+    const ok = confirm(
+      'Filter aktif: ' + summary + '\n\n' +
+      'Hanya soal yang cocok dengan filter itu yang akan diproses (' + filtered.length + ' soal).\n' +
+      'Lanjutkan?'
+    );
+    if (!ok) return false;
   }
   printSettings = readPrintSettingsFromUI();
   savePrintSettings();
@@ -2058,11 +2685,13 @@ function printQuestions(){
 
 loadPrintSettings();
 loadKopSettings();
+loadTopiks();
 applyPrintSettingsToUI();
 bindPrintSettingsInputs();
 bindKopModalInputs();
 render();
 renderMainKopPreview();
+
 </script>
 </body>
 </html>
