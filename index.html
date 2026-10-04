@@ -291,10 +291,15 @@
       </div>
       <label for="printQuestionGap">Jarak Soal (px):</label>
       <input type="number" id="printQuestionGap" min="0" max="80" value="1">
-      <label for="printPgPerRow">Pilihan jawaban:</label>
-      <select id="printPgPerRow">
-        <option value="2">2 baris — A|C / B|D</option>
-        <option value="1">1 baris — A|B|C|D</option>
+      <label for="printQuestionFormat">Format soal:</label>
+      <select id="printQuestionFormat">
+        <option value="2">2 baris (paragraf)</option>
+        <option value="1">1 baris (kompak)</option>
+      </select>
+      <label for="printColumnCount">Kolom:</label>
+      <select id="printColumnCount">
+        <option value="2">2 kolom (dengan garis)</option>
+        <option value="1">1 kolom (tanpa garis)</option>
       </select>
       <div class="toolbar-font">
         <label for="printFontSize">Font:</label>
@@ -538,7 +543,8 @@ const DEFAULT_PRINT_SETTINGS = {
   marginLeft: 2,
   marginRight: 2,
   questionGap: 1,
-  pgPerRow: 2
+  questionFormat: 2,
+  columnCount: 2
 };
 let printSettings = { ...DEFAULT_PRINT_SETTINGS };
 
@@ -1106,7 +1112,8 @@ function applyPrintSettingsToUI() {
   document.getElementById('printMarginLeft').value = s.marginLeft;
   document.getElementById('printMarginRight').value = s.marginRight;
   document.getElementById('printQuestionGap').value = s.questionGap;
-  document.getElementById('printPgPerRow').value = s.pgPerRow === 1 ? '1' : '2';
+  document.getElementById('printQuestionFormat').value = s.questionFormat === 1 ? '1' : '2';
+  document.getElementById('printColumnCount').value = s.columnCount === 1 ? '1' : '2';
 }
 
 function readPrintSettingsFromUI() {
@@ -1122,18 +1129,19 @@ function readPrintSettingsFromUI() {
     marginLeft: Math.max(0, num('printMarginLeft', 6)),
     marginRight: Math.max(0, num('printMarginRight', 6)),
     questionGap: Math.max(0, num('printQuestionGap', 1)),
-    pgPerRow: document.getElementById('printPgPerRow')?.value === '1' ? 1 : 2
+    questionFormat: document.getElementById('printQuestionFormat')?.value === '1' ? 1 : 2,
+    columnCount: document.getElementById('printColumnCount')?.value === '1' ? 1 : 2
   };
 }
 
-/** 1 = semua pilihan dalam 1 baris, 2 = 2 baris (A|B / C|D) */
-function getPgPrintPerRow() {
-  return Number(printSettings.pgPerRow) === 1 ? 1 : 2;
+/** 1 = 1 baris (kompak), 2 = 2 baris (paragraf) */
+function getQuestionFormat() {
+  return Number(printSettings.questionFormat) === 1 ? 1 : 2;
 }
 
 function bindPrintSettingsInputs() {
   const ids = ['printFontSize','printPaper','printMarginTop','printMarginBottom',
-    'printMarginLeft','printMarginRight','printQuestionGap','printPgPerRow'];
+    'printMarginLeft','printMarginRight','printQuestionGap','printQuestionFormat','printColumnCount'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener('change', () => {
@@ -1680,9 +1688,15 @@ function getQuestionHangStyle(num, spacerOnly = false) {
 
 function buildQuestionTextRow(num, text) {
   const t = (text || '').trim();
+  const format = getQuestionFormat();
   const style = getQuestionHangStyle(num, false);
   const inner = t ? `<b>${num}.</b> ${escapeHtml(t)}` : `<b>${num}.</b>`;
-  return `<div class="q-hang-line q-text-row" style="${style}">${inner}</div>`;
+  
+  // Format 1 baris (kompak): white-space: nowrap untuk mencegah wrap
+  // Format 2 baris (paragraf): normal wrapping
+  const extraStyle = format === 1 ? 'white-space:nowrap;' : '';
+  
+  return `<div class="q-hang-line q-text-row" style="${style}${extraStyle}">${inner}</div>`;
 }
 
 function buildQuestionSpacerRow(num, bodyHtml, extraClass = 'q-head-row') {
@@ -2187,18 +2201,20 @@ function printDocumentStyles() {
   html,body{width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;}
    body{display:flex!important;flex-direction:column!important;align-items:center!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .print-sheet{width:100%;max-width:100%;margin:0;padding:0;box-sizing:border-box;}
-  .print-flow{column-fill:auto;-webkit-column-fill:auto;}
+  .print-flow{column-fill:balance;-webkit-column-fill:balance;}
   .print-kop-wrap{break-after:avoid;page-break-after:avoid;}
   .opt-grid-print,table{page-break-inside:auto;}
   .q{page-break-inside:avoid;break-inside:avoid;}
+  .print-flow:last-child{page-break-after:auto;break-after:auto;}
+  .print-flow>*:last-child{page-break-after:avoid;break-after:avoid;}
 }
 html,body{margin:0;padding:0;}
 body{font-family:"Times New Roman",Times,serif;font-size:${s.fontSize}px;line-height:1.4;color:#000;margin:0;padding:0;display:flex;flex-direction:column;align-items:center;}
 .print-sheet{width:100%;max-width:100%;margin:0;padding:0;box-sizing:border-box;}
 ${kopCss}
 .print-flow{
-  column-count:2;column-gap:2.2em;column-rule:1.5px solid #000;
-  column-fill:auto;-webkit-column-fill:auto;
+  column-count:${s.columnCount};column-gap:${s.columnCount === 1 ? '0' : '2.2em'};column-rule:${s.columnCount === 1 ? 'none' : '1.5px solid #000'};
+  column-fill:balance;-webkit-column-fill:balance;
   text-align:justify;
 }
 .section-title{font-weight:700;font-size:${sectionSize}px;margin:1ch 0 0.35em 0;break-after:avoid;page-break-after:avoid;}
@@ -2480,13 +2496,13 @@ function renderPGOptionsBody(q, highlight) {
   return renderPGOptionsColumns(q, highlight, 2);
 }
 
-/** Versi cetak: ikut pengaturan "Pilihan jawaban" (1 baris / 2 baris) di toolbar */
+/** Versi cetak: ikut pengaturan format pilihan per soal (pgFormat) */
 function renderPGOptionsBodyPrint(q) {
   if (getPgFormat(q) === PG_FORMAT_VERTICAL) {
     return renderPGOptionsVertical(q, false);
   }
-  const perRow = getPgPrintPerRow();
-  return renderPGOptionsColumns(q, false, perRow === 1 ? (q.options || []).length || 1 : 2);
+  // Default 2 kolom (A|C / B|D) untuk format grid
+  return renderPGOptionsColumns(q, false, 2);
 }
 
 function exportData(){
