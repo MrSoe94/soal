@@ -260,6 +260,7 @@
       <button class="btn btn-green" onclick="openModal('isian')">➕ Isian</button>
       <button class="btn btn-orange" onclick="openModal('esai')">➕ Esai</button>
       <button class="btn btn-gray" onclick="addTopikPrompt()">📚 Tambah Pembelajaran</button>
+      <button class="btn btn-gray" onclick="deleteTopikPrompt()">🗑️ Hapus Pembelajaran</button>
       <button class="btn btn-gray" onclick="fillDummy()">🧪 Isi Dummy</button>
       <button class="btn btn-gray" onclick="exportData()">💾 Export JSON</button>
       <button class="btn btn-gray" onclick="document.getElementById('importFile').click()">📂 Import JSON</button>
@@ -1341,6 +1342,57 @@ function addTopikPrompt() {
   render();
   alert((isNew ? 'Pembelajaran "' + t + '" ditambahkan.' : '"' + t + '" sudah ada.')
     + '\n\nMata pelajaran pada kop soal ikut diganti.');
+}
+
+function deleteTopikPrompt() {
+  const names = getTopikNames();
+  if (names.length === 0) {
+    alert('Belum ada pembelajaran yang bisa dihapus.');
+    return;
+  }
+  
+  let msg = 'Pilih pembelajaran yang ingin dihapus:\n\n';
+  names.forEach((n, i) => {
+    const count = questions.filter(q => topikKey(q.topik) === topikKey(n)).length;
+    msg += `${i + 1}. ${n} (${count} soal)\n`;
+  });
+  msg += '\nMasukkan nomor pembelajaran yang akan dihapus:';
+  
+  const input = prompt(msg);
+  if (input === null) return;
+  
+  const idx = parseInt(input, 10) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= names.length) {
+    alert('Nomor tidak valid.');
+    return;
+  }
+  
+  const topikToDelete = names[idx];
+  const topikKeyToDelete = topikKey(topikToDelete);
+  const count = questions.filter(q => topikKey(q.topik) === topikKeyToDelete).length;
+  
+  const confirmMsg = `Hapus pembelajaran "${topikToDelete}" beserta ${count} soal di dalamnya?\n\nPembelajaran lain tidak akan terhapus.`;
+  if (!confirm(confirmMsg)) return;
+  
+  // Hapus soal yang terkait dengan topik ini
+  questions = questions.filter(q => topikKey(q.topik) !== topikKeyToDelete);
+  
+  // Hapus topik dari daftar
+  topiks = topiks.filter(t => topikKey(t) !== topikKeyToDelete);
+  saveTopiks();
+  save();
+  
+  // Reset filter jika sedang memfilter topik yang dihapus
+  const sel = document.getElementById('filterTopik');
+  if (sel && sel.value === topikKeyToDelete) {
+    sel.value = 'all';
+  }
+  
+  renderTopikFilterOptions();
+  renderTopikDatalist();
+  render();
+  
+  alert(`Pembelajaran "${topikToDelete}" dan ${count} soal telah dihapus.`);
 }
 
 function addTopikFromForm() {
