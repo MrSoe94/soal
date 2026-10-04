@@ -210,7 +210,7 @@
   .q-image-preview-wrap .q-preview-txt { font-weight: 600; }
   .opt-list-vertical { margin-top: 6px; padding-left: 0; max-width: 100%; }
   .opt-vertical-item { margin: 0.2em 0; }
-  .modal.modal-kop { max-width: 720px; max-height: 92vh; overflow: hidden; display: flex; flex-direction: column; }
+  .modal.modal-kop { max-width: 900px; max-height: 92vh; overflow: hidden; display: flex; flex-direction: column; }
   .kop-modal-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
   .kop-modal-top label { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; }
   .kop-modal-stack { display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; overflow: hidden; }
@@ -259,14 +259,14 @@
       <button class="btn btn-primary" onclick="openModal('pg')">➕ Pilihan Ganda</button>
       <button class="btn btn-green" onclick="openModal('isian')">➕ Isian</button>
       <button class="btn btn-orange" onclick="openModal('esai')">➕ Esai</button>
-      <button class="btn btn-gray" onclick="addTopikPrompt()">📚a Tambah Pembelajaran</button>
+      <button class="btn btn-gray" onclick="addTopikPrompt()">📚 Tambah Pembelajaran</button>
       <button class="btn btn-gray" onclick="fillDummy()">🧪 Isi Dummy</button>
       <button class="btn btn-gray" onclick="exportData()">💾 Export JSON</button>
       <button class="btn btn-gray" onclick="document.getElementById('importFile').click()">📂 Import JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-      <button class="btn btn-gray" onclick="openKopModal()">📋9 Kop Soal</button>
+      <button class="btn btn-gray" onclick="openKopModal()">📋 Kop Soal</button>
       <button class="btn btn-gray" onclick="printQuestions()">🖨️ Cetak / Preview</button>
-      <button class="btn btn-gray" onclick="printAnswerSheet()">📋9 Lembar Jawaban</button>
+      <button class="btn btn-gray" onclick="printAnswerSheet()">📋 Lembar Jawaban</button>
       <button class="btn btn-gray" onclick="printAnswerKey()">🔑 Kunci Jawaban</button>
       <button class="btn btn-gray" id="btnExportPdf" onclick="exportPdf()">📄 Export PDF</button>
       <button class="btn btn-gray" id="btnExportWord" onclick="exportWord()">📝 Export Word</button>
@@ -325,7 +325,7 @@
 
   <div id="kopPreviewMain" class="kop-preview-main" style="display:none;">
     <div class="kop-preview-header">
-      <span>📋9 Pratinjau Kop Soal</span>
+      <span>📋 Pratinjau Kop Soal</span>
       <button class="btn btn-gray btn-sm" onclick="openKopModal()">✏️ Edit Kop</button>
     </div>
     <iframe id="kopPreviewMainFrame" title="Pratinjau Kop"></iframe>
@@ -345,7 +345,7 @@
       <div class="prev-head">
         <span class="prev-head-title">📖 Soal sebelumnya — No. <span id="prevNo">0</span></span>
         <div class="prev-head-actions">
-          <button type="button" class="btn btn-gray btn-sm" onclick="togglePrevList()">📚a Daftar soal sesi ini (<span id="prevCount">0</span>)</button>
+          <button type="button" class="btn btn-gray btn-sm" onclick="togglePrevList()">📚 Daftar soal sesi ini (<span id="prevCount">0</span>)</button>
           <button type="button" class="btn btn-gray btn-sm" onclick="editPrevQuestion()">✏️ Edit soal ini</button>
         </div>
       </div>
@@ -367,7 +367,7 @@
       <label>Pertanyaan</label>
       <textarea id="questionText" placeholder="Teks pertanyaan (opsional jika hanya gambar)..."></textarea>
       <div class="img-controls" style="margin-top:8px;">
-        <button type="button" class="btn btn-gray btn-sm" onclick="document.getElementById('qImageFile').click()">📎️ Tambah Gambar</button>
+        <button type="button" class="btn btn-gray btn-sm" onclick="document.getElementById('qImageFile').click()">📎 Tambah Gambar</button>
         <button type="button" class="btn btn-red btn-sm" id="qImageRemove" style="display:none;" onclick="removeQImage()">Hapus Gambar</button>
         <input type="file" id="qImageFile" accept="image/*" style="display:none" onchange="handleQImage(event)">
       </div>
@@ -423,7 +423,7 @@
         <button type="button" class="btn btn-primary btn-sm" onclick="answerAddAgain('pg')">➕ Pilihan Ganda</button>
         <button type="button" class="btn btn-green btn-sm" onclick="answerAddAgain('isian')">➕ Isian</button>
         <button type="button" class="btn btn-orange btn-sm" onclick="answerAddAgain('esai')">➕ Esai</button>
-        <button type="button" class="btn btn-gray btn-sm" onclick="answerAddAgain('no')">❌️ Tidak, selesai</button>
+        <button type="button" class="btn btn-gray btn-sm" onclick="answerAddAgain('no')">❌ Tidak, selesai</button>
       </div>
     </div>
   </div>
@@ -432,7 +432,7 @@
 <!-- MODAL KOP SOAL -->
 <div class="modal-overlay" id="kopModalOverlay">
   <div class="modal modal-kop">
-    <h2>📋9 Pengaturan Kop Soal</h2>
+    <h2>📋 Pengaturan Kop Soal</h2>
     <div class="kop-modal-top">
       <label><input type="checkbox" id="kopEnabled" checked> Tampilkan kop saat cetak</label>
       <label><input type="checkbox" id="kopSubjectAuto" checked> Mata Pelajaran ikut Pembelajaran</label>
@@ -483,7 +483,7 @@
           </select>
           <label for="kopLogoOffsetX">Geser ↔ (px):</label>
           <input type="number" id="kopLogoOffsetX" value="0" min="-150" max="150" step="1" title="Minus = kiri, plus = kanan">
-          <label for="kopLogoOffsetY">Geser ↔" (px):</label>
+          <label for="kopLogoOffsetY">Geser ↕ (px):</label>
           <input type="number" id="kopLogoOffsetY" value="0" min="-40" max="40" step="1" title="Minus = atas, plus = bawah">
         </div>
         <h3>Isian Kanan (Nama, Hari, ⬦)</h3>
@@ -1471,7 +1471,6 @@ function openModal(type, editId=null) {
 }
 
 function closeModal() {
-  document.getElementById('modalOverlay').classList.add('active') && void 0;
   document.getElementById('modalOverlay').classList.remove('active');
   hideAddAgainBar();
 }
@@ -2207,7 +2206,7 @@ function printDocumentStyles() {
   .q{page-break-inside:avoid;break-inside:avoid;}
 }
 html,body{margin:0;padding:0;}
-body{font-family:"Times New Roman",Times,serif;font-size:${s.fontSize}px;line-height:1.4;color:#000;margin:0;padding:0;display:flex;flex-direction:column;align-items:center;}
+body{font-family:"Times New Roman",Times,serif;font-size:${s.fontSize}px;line-height:1.4;color:#000;margin:0;padding:0;}
 .print-sheet{width:100%;max-width:100%;margin:0;padding:0;box-sizing:border-box;}
 ${kopCss}
 .print-flow{
