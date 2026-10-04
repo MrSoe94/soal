@@ -2199,14 +2199,12 @@ function printDocumentStyles() {
 @media print{
   @page{${pageRule}}
   html,body{width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;}
-   body{display:flex!important;flex-direction:column!important;align-items:center!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+   body{display:block!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .print-sheet{width:100%;max-width:100%;margin:0;padding:0;box-sizing:border-box;}
-  .print-flow{column-fill:balance;-webkit-column-fill:balance;}
+  .print-flow{column-fill:auto;-webkit-column-fill:auto;}
   .print-kop-wrap{break-after:avoid;page-break-after:avoid;}
   .opt-grid-print,table{page-break-inside:auto;}
   .q{page-break-inside:avoid;break-inside:avoid;}
-  .print-flow:last-child{page-break-after:auto;break-after:auto;}
-  .print-flow>*:last-child{page-break-after:avoid;break-after:avoid;}
 }
 html,body{margin:0;padding:0;}
 body{font-family:"Times New Roman",Times,serif;font-size:${s.fontSize}px;line-height:1.4;color:#000;margin:0;padding:0;display:flex;flex-direction:column;align-items:center;}
@@ -2214,7 +2212,7 @@ body{font-family:"Times New Roman",Times,serif;font-size:${s.fontSize}px;line-he
 ${kopCss}
 .print-flow{
   column-count:${s.columnCount};column-gap:${s.columnCount === 1 ? '0' : '2.2em'};column-rule:${s.columnCount === 1 ? 'none' : '1.5px solid #000'};
-  column-fill:balance;-webkit-column-fill:balance;
+  column-fill:auto;-webkit-column-fill:auto;
   text-align:justify;
 }
 .section-title{font-weight:700;font-size:${sectionSize}px;margin:1ch 0 0.35em 0;break-after:avoid;page-break-after:avoid;}
